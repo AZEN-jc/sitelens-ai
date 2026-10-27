@@ -1,0 +1,21 @@
+[
+  {"id":"wordpress","name":"WordPress","category":"CMS","rules":[{"source":"meta_generator","pattern":"WordPress","weight":90},{"source":"html","pattern":"wp-content/","weight":60}]},
+  {"id":"drupal","name":"Drupal","category":"CMS","rules":[{"source":"meta_generator","pattern":"Drupal","weight":90},{"source":"html","pattern":"/sites/default/files/","weight":60}]},
+  {"id":"joomla","name":"Joomla","category":"CMS","rules":[{"source":"meta_generator","pattern":"Joomla","weight":90},{"source":"html","pattern":"/media/system/js/","weight":50}]},
+  {"id":"react","name":"React","category":"Frontend framework","rules":[{"source":"html","pattern":"data-reactroot|__REACT_DEVTOOLS_GLOBAL_HOOK__","weight":65},{"source":"script_src","pattern":"react(?:\\.|-|/).*\\.js(?:$|\\?)","weight":55}]},
+  {"id":"vue","name":"Vue","category":"Frontend framework","rules":[{"source":"html","pattern":"data-v-[0-9a-f]{4,}","weight":60},{"source":"script_src","pattern":"vue(?:\\.|-|/).*\\.js(?:$|\\?)","weight":60}]},
+  {"id":"angular","name":"Angular","category":"Frontend framework","rules":[{"source":"html","pattern":"ng-version=","weight":90},{"source":"script_src","pattern":"angular(?:\\.|-|/).*\\.js(?:$|\\?)","weight":55}]},
+  {"id":"nextjs","name":"Next.js","category":"Web framework","rules":[{"source":"html","pattern":"__NEXT_DATA__|/_next/static/","weight":85}]},
+  {"id":"nuxt","name":"Nuxt","category":"Web framework","rules":[{"source":"html","pattern":"__NUXT__|/_nuxt/","weight":85}]},
+  {"id":"sveltekit","name":"SvelteKit","category":"Web framework","rules":[{"source":"html","pattern":"__sveltekit|/_app/immutable/","weight":80}]},
+  {"id":"nginx","name":"Nginx","category":"Web server","rules":[{"source":"header:server","pattern":"nginx","weight":85}]},
+  {"id":"apache","name":"Apache","category":"Web server","rules":[{"source":"header:server","pattern":"Apache","weight":85}]},
+  {"id":"iis","name":"Microsoft IIS","category":"Web server","rules":[{"source":"header:server","pattern":"Microsoft-IIS","weight":85}]},
+  {"id":"cloudflare","name":"Cloudflare","category":"CDN","rules":[{"source":"header:server","pattern":"cloudflare","weight":85},{"source":"header:cf-ray","pattern":".+","weight":70}]},
+  {"id":"bootstrap","name":"Bootstrap","category":"UI framework","rules":[{"source":"html","pattern":"bootstrap(?:\\.min)?\\.css","weight":70},{"source":"style_href","pattern":"bootstrap(?:\\.min)?\\.css","weight":80}]},
+  {"id":"tailwind","name":"Tailwind CSS","category":"UI framework","rules":[{"source":"html","pattern":"tailwindcss","weight":55},{"source":"style_href","pattern":"tailwind(?:\\.min)?\\.css","weight":75}]},
+  {"id":"jquery","name":"jQuery","category":"JavaScript library","rules":[{"source":"script_src","pattern":"jquery(?:[-.]\\d|\\.min)?\\.js(?:$|\\?)","weight":75}]},
+  {"id":"google-analytics","name":"Google Analytics","category":"Analytics","rules":[{"source":"script_src","pattern":"googletagmanager\\.com/gtag/js","weight":85},{"source":"html","pattern":"google-analytics\\.com/analytics\\.js","weight":80}]},
+  {"id":"astro","name":"Astro","category":"Static site tool","rules":[{"source":"html","pattern":"astro-island|/_astro/","weight":85}]},
+  {"id":"hugo","name":"Hugo","category":"Static site tool","rules":[{"source":"meta_generator","pattern":"Hugo","weight":90}]}
+]
