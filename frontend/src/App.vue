@@ -3,9 +3,10 @@ import { RouterLink, RouterView, useRoute } from 'vue-router'
 
 const route = useRoute()
 const links = [
-  { label: 'Overview', to: '/', icon: '◫' },
-  { label: 'Compare', to: '/compare', icon: '⇄' },
-  { label: 'Reports', to: '/reports', icon: '▤' },
+  { label: '概览', to: '/', icon: '◫' },
+  { label: '历史对比', to: '/compare', icon: '⇄' },
+  { label: '报告', to: '/reports', icon: '▤' },
+  { label: '设置', to: '/settings', icon: '⚙' },
 ]
 </script>
 
@@ -14,23 +15,22 @@ const links = [
     <aside class="sidebar">
       <RouterLink to="/" class="brand">
         <span class="brand-mark">◈</span>
-        <span><strong>SiteLens</strong><small>TECH INTELLIGENCE</small></span>
+        <span><strong>SiteLens</strong><small>网站技术识别与分析</small></span>
       </RouterLink>
-      <div class="nav-group-label">WORKSPACE</div>
-      <nav class="side-nav" aria-label="Main navigation">
+      <div class="nav-group-label">工作区</div>
+      <nav class="side-nav" aria-label="主导航">
         <RouterLink v-for="item in links" :key="item.to" :to="item.to" :class="{ active: route.path === item.to || (item.to === '/' && route.path.startsWith('/scans/')) }">
           <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
         </RouterLink>
       </nav>
       <div class="sidebar-bottom">
-        <div class="local-status"><i></i><span><b>Local session</b><small>Data stays on this device</small></span></div>
-        <RouterLink to="/settings" class="settings-link" :class="{ active: route.path === '/settings' }"><span class="nav-icon">⚙</span>Settings</RouterLink>
+        <div class="local-status"><i></i><span><b>本机运行</b><small>数据保存在此设备</small></span></div>
       </div>
     </aside>
     <main class="main-pane">
       <header class="topbar">
-        <div class="breadcrumb">SiteLens <span>/</span> <b>{{ route.path.startsWith('/scans/') ? 'Analysis' : route.path.slice(1) || 'Overview' }}</b></div>
-        <div class="topbar-right"><span class="private-pill"><i></i> LOCAL ONLY</span><RouterLink to="/settings" aria-label="Settings" class="top-avatar">SL</RouterLink></div>
+        <div class="breadcrumb">SiteLens <span>/</span> <b>{{ route.path.startsWith('/scans/') ? '检测结果' : links.find(item => item.to === route.path)?.label || '概览' }}</b></div>
+        <div class="topbar-right"><span class="private-pill"><i></i>仅本机</span></div>
       </header>
       <RouterView />
     </main>

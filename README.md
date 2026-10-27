@@ -1,14 +1,22 @@
 # SiteLens AI
 
-SiteLens AI analyzes public website technology signals for sites you own or are authorized to inspect. Each detection includes the observed evidence behind it. AI analysis explains those results; it does not decide whether a technology is present.
+**基于 Python 与人工智能的网站技术特征识别与分析系统**，用于对你拥有或获准检测的网站进行本机分析。每项技术识别都会列出对应的公开证据；AI 只解释识别结果，不负责决定技术是否存在。
 
-## Requirements
+## 功能
 
-- Python 3.11 or newer
-- Node.js 22.22.2 or newer in the 22.x line, or 24.15.0 or newer
+- 通过普通 HTTP(S) GET 请求采集网站公开信号，并用 JSON 指纹规则识别技术。
+- 查看每项识别结果的匹配证据、内部置信等级和技术分类。
+- 在本机 SQLite 中保存检测历史，比较两次检测并导出 HTML、JSON 报告。
+- 可选连接 OpenAI 兼容服务，对结构化检测摘要进行 AI 解读。
+- 中文界面；本机单用户运行，不含账号系统或云端服务。
+
+## 环境要求
+
+- Python 3.11 或更新版本
+- Node.js 22.22.2 或更新的 22.x，或 24.15.0 或更新版本
 - pnpm 11
 
-## Run locally
+## 本机运行
 
 ```sh
 uv sync --all-extras
@@ -19,48 +27,50 @@ cd ..
 ./scripts/start-local.sh
 ```
 
-Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The server binds only to loopback. The SQLite history is created at `data/sitelens.sqlite`.
+打开 [http://127.0.0.1:8000](http://127.0.0.1:8000)。服务只绑定本机回环地址。SQLite 检测历史保存在 `data/sitelens.sqlite`。
 
-If you do not use uv, create `.venv` with Python and install the project using `.venv/bin/pip install -e '.[dev]'`; `uv.lock` records the verified Python dependency resolution.
+如果没有安装 uv，可使用 `.venv/bin/pip install -e '.[dev]'` 安装后端依赖；`uv.lock` 记录 Python 依赖版本。
 
-For frontend development, keep the API running in one terminal:
+前端开发时，先在一个终端启动 API：
 
 ```sh
 .venv/bin/uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
 ```
 
-Then start Vite in another terminal:
+再在另一个终端启动 Vite：
 
 ```sh
 cd frontend
 pnpm dev
 ```
 
-## Use
+## 使用流程
 
-1. Enter an HTTP(S) URL and confirm that you own the site or have permission to analyze it.
-2. Review technology cards and their matching response evidence.
-3. Optionally configure an OpenAI-compatible Chat Completions endpoint in Settings. The API key stays in backend memory until restart.
-4. Before generating AI analysis, review the exact structured summary shown by the page and confirm sending it to the configured service.
-5. Compare saved scans and export HTML or JSON. In the HTML report, use the browser’s **Print → Save as PDF** action for a PDF copy.
+1. 输入 HTTP(S) 地址，并确认你拥有该网站或已获得检测许可。
+2. 查看识别结果及每项技术对应的响应证据。
+3. 如需 AI 解读，在“设置”中配置兼容 OpenAI Chat Completions 的服务。API 密钥只保存在后端内存中，服务重启后清除。
+4. 生成 AI 分析前，先查看将发送的结构化摘要并确认发送。
+5. 可比较历史检测，或导出 HTML、JSON；HTML 报告可通过浏览器“打印”另存为 PDF。
 
-The scanner performs ordinary public HTTP GET requests only. It blocks local, private, and reserved addresses, rechecks every redirect, pins connections to the validated DNS address, uses a 10-second timeout, allows at most five redirects, and reads at most 5 MiB. It does not probe vulnerabilities or bypass access controls. The authorization checkbox is a user attestation; the software cannot independently verify ownership.
+## 安全边界与局限
 
-Configuring a local or private AI Base URL is an explicit trust decision and is separate from scanning: the scanner still blocks private targets. Do not expose this single-user local service on a shared network; it has no user authentication.
+扫描器只发起普通公开 HTTP GET 请求，会拒绝本机、私有和保留地址；每次重定向都会重新校验目标，并连接到已校验的 DNS 地址。请求超时为 10 秒，最多跟随 5 次重定向，最多读取 5 MiB。系统不进行漏洞探测或访问控制绕过。授权勾选是用户声明，软件不能独立验证网站所有权。
 
-## Verification
+配置本机或私有网络 AI 地址属于单独的信任决定，不会放宽扫描器的目标限制。系统不含用户认证，请勿将服务暴露到共享网络。动态浏览器渲染识别也不属于当前版本能力。
+
+## 验收与学习材料
+
+- [中文学习手册：代码地图、扫描链路、安全边界与自测题](docs/LEARNING_GUIDE.md)
+- [5–8 分钟答辩稿、现场演示与常见问题](docs/DEFENSE_SCRIPT.md)
+- [AI 辅助使用记录](docs/AI_USAGE_LOG.md)
+- [验收记录](docs/TEST_REPORT.md)
+- [架构与 API 文档](docs/ARCHITECTURE.md) · [API 参考](docs/API.md)
+- [技术选型记录](docs/TECH_SELECTION.md) · [第三方声明](THIRD_PARTY_NOTICES.md)
+
+## 检查
 
 ```sh
 .venv/bin/pytest
 .venv/bin/ruff check backend tests
 cd frontend && pnpm test && pnpm build
 ```
-
-## 中文学习与答辩材料
-
-- [学习手册：模块地图、扫描链路、安全边界、自测题](docs/LEARNING_GUIDE.md)
-- [5–8 分钟答辩稿、演示步骤与常见问题](docs/DEFENSE_SCRIPT.md)
-- [AI 辅助使用记录](docs/AI_USAGE_LOG.md)
-- [最新验证记录](docs/TEST_REPORT.md)
-
-Phase 0 findings and third-party license boundaries are in [docs/TECH_SELECTION.md](docs/TECH_SELECTION.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Architecture and API details are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/API.md](docs/API.md).

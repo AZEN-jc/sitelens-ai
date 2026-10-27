@@ -2,6 +2,16 @@
 
 执行日期：2026-10-27。以下只记录本轮在当前工作区实际运行的检查。
 
+## 2026-10-27 界面中文化与导航修复
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 设置入口回归测试（先红后绿） | `pnpm exec vitest run tests/App.test.ts --reporter=verbose`（在 `frontend` 目录） | 修改前按预期失败：主导航没有 `/settings` 链接；修改后通过。 |
+| 前端测试 | `pnpm test`（在 `frontend` 目录） | 退出码 0；2 个测试通过。pnpm 提示当前 Node.js `v23.11.0` 不符合项目声明的支持版本范围。 |
+| 前端类型检查与生产构建 | `pnpm build`（在 `frontend` 目录） | 退出码 0；`vue-tsc -b` 和 Vite 构建成功。图表分块 540.47 kB（gzip 188.56 kB），仍触发 500 kB 体积提示。 |
+| 启动及 HTTP 冒烟 | `./scripts/start-local.sh`；`/usr/bin/curl` 请求 `/`、`/scans/1`、`/api/health` | 启动前浏览器遇到 `ERR_CONNECTION_REFUSED`；启动后首页和检测深链均返回 HTTP 200，健康接口返回 `{"status":"ok"}`。 |
+| 浏览器界面验收 | 在本机首页点击主导航“设置” | 浏览器到达 `/settings`，显示中文设置表单、状态和密钥存储说明。仅验证桌面视口的实际导航与页面展示。 |
+
 ## 结果
 
 | 检查 | 实际命令/操作 | 本轮结果 |

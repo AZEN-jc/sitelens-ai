@@ -10,12 +10,12 @@ import type { Technology } from '../types'
 
 const props = defineProps<{ technologies: Technology[] }>()
 const nodes = computed(() => [
-  { id: 'response', position: { x: 0, y: 80 }, data: { label: 'Public response' }, class: 'flow-node flow-origin' },
+  { id: 'response', position: { x: 0, y: 80 }, data: { label: '公开响应' }, class: 'flow-node flow-origin' },
   ...props.technologies.map((tech, index) => ({
-    id: `tech-${index}`, position: { x: 230 + (index % 2) * 230, y: Math.floor(index / 2) * 100 }, data: { label: `${tech.name} · ${tech.confidence}` }, class: 'flow-node',
+    id: `tech-${index}`, position: { x: 230 + (index % 2) * 230, y: Math.floor(index / 2) * 100 }, data: { label: `${tech.name} · ${{ high: '高', medium: '中', low: '低' }[tech.confidence]}置信` }, class: 'flow-node',
   })),
 ])
-const edges = computed(() => props.technologies.map((_, index) => ({ id: `edge-${index}`, source: 'response', target: `tech-${index}`, label: 'observed', animated: false, style: { stroke: '#64726c' } })))
+const edges = computed(() => props.technologies.map((_, index) => ({ id: `edge-${index}`, source: 'response', target: `tech-${index}`, label: '观察到', animated: false, style: { stroke: '#64726c' } })))
 </script>
 
 <template>

@@ -22,7 +22,7 @@ async function load() {
   try {
     scan.value = await api.scan(String(route.params.id))
     aiConfigured.value = (await api.aiStatus()).configured
-  } catch (error) { ElMessage.error(error instanceof Error ? error.message : 'Could not load this analysis.') }
+  } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取这条检测记录。') }
   finally { loading.value = false }
 }
 onMounted(load)
@@ -51,8 +51,8 @@ async function analyze() {
     await api.analyze(scan.value.id)
     scan.value = await api.scan(scan.value.id)
     confirmed.value = false
-    ElMessage.success('Analysis saved to this scan.')
-  } catch (error) { ElMessage.error(error instanceof Error ? error.message : 'AI analysis failed.') }
+    ElMessage.success('AI 分析已保存到这条检测记录。')
+  } catch (error) { ElMessage.error(error instanceof Error ? error.message : 'AI 分析失败。') }
   finally { sending.value = false }
 }
 
@@ -60,53 +60,53 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
 </script>
 
 <template>
-  <div v-if="loading" class="page-wrap loading-state">Retrieving saved analysis…</div>
+  <div v-if="loading" class="page-wrap loading-state">正在读取检测记录…</div>
   <div v-else-if="scan" class="page-wrap scan-page">
     <div class="scan-header">
-      <div><div class="eyebrow">ANALYSIS / {{ String(scan.id).padStart(4, '0') }}</div><h1>{{ scan.title || hostOf(scan.final_url) }}</h1><a class="url-display" :href="scan.final_url" target="_blank" rel="noreferrer">{{ scan.final_url }} ↗</a></div>
-      <div class="scan-actions"><span class="complete-badge"><i></i> ANALYSIS COMPLETE</span><el-button @click="openPrintReport">Export report ↗</el-button></div>
+      <div><div class="eyebrow">检测结果 / {{ String(scan.id).padStart(4, '0') }}</div><h1>{{ scan.title || hostOf(scan.final_url) }}</h1><a class="url-display" :href="scan.final_url" target="_blank" rel="noreferrer">{{ scan.final_url }} ↗</a></div>
+      <div class="scan-actions"><span class="complete-badge"><i></i>检测完成</span><el-button @click="openPrintReport">导出报告 ↗</el-button></div>
     </div>
-    <div class="result-meta"><span><small>HTTP STATUS</small><b>{{ scan.status_code }}</b></span><span><small>TECHNOLOGIES</small><b>{{ scan.technologies.length.toString().padStart(2, '0') }}</b></span><span><small>CONTENT TYPE</small><b>{{ scan.content_type || 'Unknown' }}</b></span><span><small>CAPTURED</small><b>{{ new Date(scan.created_at).toLocaleString() }}</b></span></div>
-    <nav class="result-tabs" aria-label="Analysis sections">
-      <button v-for="tab in ['overview', 'evidence', 'architecture', 'insights']" :key="tab" :class="{ selected: activeTab === tab }" @click="activeTab = tab">{{ tab === 'insights' ? 'AI insights' : tab[0].toUpperCase() + tab.slice(1) }}<span v-if="tab === 'insights' && scan.ai_reports.length" class="tab-count">{{ scan.ai_reports.length }}</span></button>
+    <div class="result-meta"><span><small>HTTP 状态</small><b>{{ scan.status_code }}</b></span><span><small>技术数量</small><b>{{ scan.technologies.length.toString().padStart(2, '0') }}</b></span><span><small>内容类型</small><b>{{ scan.content_type || '未知' }}</b></span><span><small>检测时间</small><b>{{ new Date(scan.created_at).toLocaleString('zh-CN') }}</b></span></div>
+    <nav class="result-tabs" aria-label="检测结果分区">
+      <button v-for="tab in ['overview', 'evidence', 'architecture', 'insights']" :key="tab" :class="{ selected: activeTab === tab }" @click="activeTab = tab">{{ ({ overview: '概览', evidence: '证据', architecture: '架构推测', insights: 'AI 分析' } as Record<string, string>)[tab] }}<span v-if="tab === 'insights' && scan.ai_reports.length" class="tab-count">{{ scan.ai_reports.length }}</span></button>
     </nav>
 
     <section v-if="activeTab === 'overview'" class="result-grid">
-      <div class="result-main"><div class="section-title-row compact"><div><div class="eyebrow">RULE ENGINE · {{ scan.technologies.length }} MATCHES</div><h2>Detected technologies</h2></div><span class="confidence-note">Confidence is an internal rule score</span></div>
+      <div class="result-main"><div class="section-title-row compact"><div><div class="eyebrow">指纹规则 · 匹配到 {{ scan.technologies.length }} 项技术</div><h2>识别结果</h2></div><span class="confidence-note">置信等级是项目内部规则评分</span></div>
         <div v-if="scan.technologies.length" class="technology-grid">
           <article v-for="tech in scan.technologies" :key="tech.name" class="technology-card">
-            <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ tech.confidence }} confidence</span></div>
+            <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级</span></div>
             <h3>{{ tech.name }}</h3><span class="tech-category">{{ tech.category }}</span><div class="score-track"><i :style="{ width: `${tech.score}%` }"></i></div>
-            <button class="evidence-link" @click="activeTab = 'evidence'">{{ tech.evidence.length }} evidence signals <span>↗</span></button>
+            <button class="evidence-link" @click="activeTab = 'evidence'">{{ tech.evidence.length }} 条证据 <span>↗</span></button>
           </article>
         </div>
-        <div v-else class="empty-state small-empty">No known fingerprints matched this response. That does not mean the site uses no web technology.</div>
+        <div v-else class="empty-state small-empty">本次响应没有匹配到已知指纹。这不代表该网站没有使用相关技术。</div>
       </div>
-      <aside class="result-side"><div class="side-panel"><div class="eyebrow">TECHNOLOGY MIX</div><h3>By category</h3><TechnologyChart v-if="categories.length" :categories="categories" /><div v-else class="chart-empty">No matched signals</div></div>
-        <div class="side-panel observed-panel"><div class="eyebrow">OBSERVED RESPONSE</div><h3>Public signals</h3><dl><dt>Page title</dt><dd>{{ scan.title || 'Not present' }}</dd><dt>JavaScript resources</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS resources</dt><dd>{{ scan.styles.length }}</dd><dt>Meta signals</dt><dd>{{ scan.meta.length }}</dd></dl></div>
+      <aside class="result-side"><div class="side-panel"><div class="eyebrow">技术分类</div><h3>按类别统计</h3><TechnologyChart v-if="categories.length" :categories="categories" /><div v-else class="chart-empty">暂无匹配证据</div></div>
+        <div class="side-panel observed-panel"><div class="eyebrow">响应中观察到的信息</div><h3>公开信号</h3><dl><dt>网页标题</dt><dd>{{ scan.title || '未提供' }}</dd><dt>JavaScript 资源</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS 资源</dt><dd>{{ scan.styles.length }}</dd><dt>Meta 信息</dt><dd>{{ scan.meta.length }}</dd></dl></div>
       </aside>
     </section>
 
     <section v-else-if="activeTab === 'evidence'" class="tab-content">
-      <div class="section-title-row compact"><div><div class="eyebrow">TRACE EVERY MATCH</div><h2>Evidence explorer</h2></div></div>
-      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category }} · {{ tech.confidence }} · score {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>weight {{ item.weight }}</small></div></article>
-      <div v-if="!scan.technologies.length" class="empty-state">No evidence was matched.</div>
+      <div class="section-title-row compact"><div><div class="eyebrow">追溯每一条匹配</div><h2>识别证据</h2></div></div>
+      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
+      <div v-if="!scan.technologies.length" class="empty-state">没有匹配到证据。</div>
     </section>
 
-    <section v-else-if="activeTab === 'architecture'" class="tab-content"><div class="section-title-row compact"><div><div class="eyebrow">INFERRED RELATIONSHIPS</div><h2>Architecture map</h2></div><span class="confidence-note">Hypothesis based on public signals — not proof of internal deployment.</span></div>
+    <section v-else-if="activeTab === 'architecture'" class="tab-content"><div class="section-title-row compact"><div><div class="eyebrow">推测的技术关系</div><h2>架构关系图</h2></div><span class="confidence-note">根据公开信号推测，不代表已证实的内部部署情况。</span></div>
       <ArchitectureGraph :technologies="scan.technologies" />
-      <p class="method-note">Connections show technologies observed in the same public response. The site’s internal request path and deployment topology are not visible to this tool.</p>
+      <p class="method-note">连线表示这些技术在同一次公开响应中被观察到。本工具无法看到网站的内部请求路径或部署拓扑。</p>
     </section>
 
-    <section v-else class="tab-content ai-tab"><div class="section-title-row compact"><div><div class="eyebrow">AI-ASSISTED INTERPRETATION</div><h2>Technology insights</h2></div><RouterLink v-if="!aiConfigured" to="/settings" class="text-link">Configure AI ↗</RouterLink></div>
-      <div v-if="scan.ai_reports.length" class="ai-report-list"><article v-for="report in scan.ai_reports" :key="report.id" class="ai-report"><div class="ai-report-meta"><span>MODEL / {{ report.model }}</span><time>{{ new Date(report.created_at).toLocaleString() }}</time></div><p>{{ report.content }}</p></article></div>
-      <div class="ai-compose"><div class="ai-compose-head"><span class="ai-spark">✳</span><div><h3>Generate an evidence-based analysis</h3><p>The AI receives only this scan summary and matched evidence. It does not decide whether a technology is present.</p></div></div>
-        <details v-if="aiPreview" class="data-preview"><summary>Review the exact data to be sent</summary><pre>{{ JSON.stringify(aiPreview, null, 2) }}</pre></details>
-        <label class="authorization ai-confirm"><input v-model="confirmed" type="checkbox" /> I understand this summary will be sent to my configured AI service.</label>
-        <el-button type="primary" :loading="sending" :disabled="!aiConfigured || !confirmed" @click="analyze">{{ scan.ai_reports.length ? 'Generate another analysis' : 'Generate AI analysis' }} ↗</el-button>
-        <p v-if="!aiConfigured" class="inline-note">No AI service configured. Add your compatible endpoint in Settings.</p>
+    <section v-else class="tab-content ai-tab"><div class="section-title-row compact"><div><div class="eyebrow">AI 辅助解读</div><h2>技术分析</h2></div><RouterLink v-if="!aiConfigured" to="/settings" class="text-link">配置 AI ↗</RouterLink></div>
+      <div v-if="scan.ai_reports.length" class="ai-report-list"><article v-for="report in scan.ai_reports" :key="report.id" class="ai-report"><div class="ai-report-meta"><span>模型 / {{ report.model }}</span><time>{{ new Date(report.created_at).toLocaleString('zh-CN') }}</time></div><p>{{ report.content }}</p></article></div>
+      <div class="ai-compose"><div class="ai-compose-head"><span class="ai-spark">✳</span><div><h3>基于证据生成分析</h3><p>AI 只接收本次检测摘要和匹配到的证据，不负责判断某项技术是否存在。</p></div></div>
+        <details v-if="aiPreview" class="data-preview"><summary>查看即将发送的具体数据</summary><pre>{{ JSON.stringify(aiPreview, null, 2) }}</pre></details>
+        <label class="authorization ai-confirm"><input v-model="confirmed" type="checkbox" /> 我已了解：这些摘要信息将发送到我配置的 AI 服务。</label>
+        <el-button type="primary" :loading="sending" :disabled="!aiConfigured || !confirmed" @click="analyze">{{ scan.ai_reports.length ? '再生成一份分析' : '生成 AI 分析' }} ↗</el-button>
+        <p v-if="!aiConfigured" class="inline-note">尚未配置 AI 服务。请先前往“设置”添加兼容接口。</p>
       </div>
     </section>
-    <footer class="page-footer"><span>SCAN {{ String(scan.id).padStart(4, '0') }}</span><span>Missing evidence does not prove technology removal.</span><a :href="reportUrl(scan.id, 'json')" target="_blank" rel="noreferrer">Download JSON ↗</a></footer>
+    <footer class="page-footer"><span>检测记录 {{ String(scan.id).padStart(4, '0') }}</span><span>本次未观察到证据，不代表技术已被移除。</span><a :href="reportUrl(scan.id, 'json')" target="_blank" rel="noreferrer">下载 JSON ↗</a></footer>
   </div>
 </template>
