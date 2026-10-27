@@ -11,6 +11,9 @@
 | 前端类型检查与生产构建 | `pnpm build`（在 `frontend` 目录） | 退出码 0；`vue-tsc -b` 和 Vite 构建成功。图表分块 540.47 kB（gzip 188.56 kB），仍触发 500 kB 体积提示。 |
 | 启动及 HTTP 冒烟 | `./scripts/start-local.sh`；`/usr/bin/curl` 请求 `/`、`/scans/1`、`/api/health` | 启动前浏览器遇到 `ERR_CONNECTION_REFUSED`；启动后首页和检测深链均返回 HTTP 200，健康接口返回 `{"status":"ok"}`。 |
 | 浏览器界面验收 | 在本机首页点击主导航“设置” | 浏览器到达 `/settings`，显示中文设置表单、状态和密钥存储说明。仅验证桌面视口的实际导航与页面展示。 |
+| HTML 报告中文回归测试（先红后绿） | `.venv/bin/pytest tests/backend/test_api.py::test_requires_authorization_and_escapes_report_html -q` | 修改前中文标题断言失败；修改后通过，同时保留 HTML 转义和 URL 查询参数脱敏断言。 |
+| 后端测试与 lint | `.venv/bin/pytest -q && .venv/bin/ruff check backend tests` | 退出码 0；23 项测试通过，Ruff 全部通过。 |
+| 重启后端及报告实测 | 重启 `./scripts/start-local.sh` 后请求 `/api/reports/1/export?format=html` | `/`、`/scans/1`、`/api/health` 均返回 HTTP 200；运行中导出报告包含中文标题“网站检测报告”和“公开响应证据”，不再包含英文报告标题。 |
 
 ## 结果
 

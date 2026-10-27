@@ -56,6 +56,8 @@ async def test_requires_authorization_and_escapes_report_html(tmp_path, monkeypa
         report = await client.get(f"/api/reports/{scan.json()['id']}/export?format=html")
         assert "<script>alert(1)</script>" not in report.text
         assert "&lt;script&gt;alert(1)&lt;/script&gt;" in report.text
+        assert "网站检测报告" in report.text
+        assert "公开响应证据" in report.text
         assert "token=secret" not in report.text
 
 

@@ -253,21 +253,22 @@ def create_app(database_url: str | None = None) -> FastAPI:
             data = _scan_dict(session, scan)
         if format == "json":
             return Response(json.dumps(data, ensure_ascii=False, default=str, indent=2), media_type="application/json")
+        confidence_names = {"high": "高", "medium": "中", "low": "低"}
         technologies = "".join(
-            f"<section><h2>{html.escape(item['name'])} <small>{html.escape(item['category'])} · {html.escape(item['confidence'])}</small></h2>"
-            + "".join(f"<p><b>{html.escape(ev['source'])}</b>: {html.escape(ev['matched'])}</p>" for ev in item["evidence"])
+            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(item['category'])} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
+            + "".join(f"<p><b>证据来源：{html.escape(ev['source'])}</b>：{html.escape(ev['matched'])}</p>" for ev in item["evidence"])
             + "</section>" for item in data["technologies"]
         )
-        ai = "".join(f"<section><h2>AI analysis · {html.escape(item['model'])}</h2><pre>{html.escape(item['content'])}</pre></section>" for item in data["ai_reports"])
+        ai = "".join(f"<section><h2>AI 分析 · {html.escape(item['model'])}</h2><pre>{html.escape(item['content'])}</pre></section>" for item in data["ai_reports"])
         document = (
-            "<!doctype html><meta charset='utf-8'><title>SiteLens report</title>"
+            "<!doctype html><html lang='zh-CN'><meta charset='utf-8'><title>SiteLens AI 检测报告</title>"
             "<style>body{font:16px system-ui;max-width:900px;margin:40px auto;background:#101720;color:#e8eef6}"
             "section{padding:18px;border:1px solid #344254;border-radius:12px;margin:16px 0}small{color:#9aabc0}pre{white-space:pre-wrap}"
             "@media print{body{background:#fff;color:#111;margin:0}section{border-color:#bbb;break-inside:avoid}small{color:#555}}</style>"
-            f"<h1>Website analysis</h1><p>{html.escape(data['url'])} · HTTP {data['status_code']} · {html.escape(data['created_at'].isoformat())}</p>"
+            f"<h1>网站检测报告</h1><p>检测网址：{html.escape(data['url'])} · HTTP 状态：{data['status_code']} · 检测时间：{html.escape(data['created_at'].isoformat())}</p>"
             f"<h2>{html.escape(data['title'])}</h2>{technologies}{ai}"
-            "<p>Evidence comes from publicly observable responses. Confidence is an internal rule score, not a probability."
-            " Architecture relationships are hypotheses; missing evidence does not prove technology removal.</p>"
+            "<p>识别依据为公开响应证据。置信等级是项目内部规则分数，不代表统计概率。"
+            "架构关系仅为推测；本次缺少证据不代表技术已被移除。</p></html>"
         )
         return Response(document, media_type="text/html; charset=utf-8")
 
