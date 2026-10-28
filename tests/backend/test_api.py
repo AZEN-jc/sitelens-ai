@@ -100,3 +100,28 @@ async def test_ai_key_is_memory_only_and_never_returned(tmp_path, monkeypatch):
         assert cleared.status_code == 204
         status = await client.get("/api/ai/config")
         assert status.json()["configured"] is False
+
+
+@pytest.mark.asyncio
+async def test_scan_history_count_and_offset_reach_older_records(tmp_path, monkeypatch):
+    async def fetch(url):
+        return page("History", "nginx")
+
+    monkeypatch.setattr(main, "fetch_page", fetch)
+    app = main.create_app(f"sqlite:///{tmp_path / 'history-pages.db'}")
+    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+        created = []
+        for index in range(35):
+            response = await client.post("/api/scans", json={
+                "url": f"https://example.test/{index}", "authorized": True,
+            })
+            created.append(response.json()["id"])
+
+        count = await client.get("/api/scans/count")
+        first_page = await client.get("/api/scans?limit=30&offset=0")
+        second_page = await client.get("/api/scans?limit=30&offset=30")
+
+    assert count.json() == {"count": 35}
+    assert len(first_page.json()) == 30
+    assert len(second_page.json()) == 5
+    assert {scan["id"] for scan in first_page.json() + second_page.json()} == set(created)

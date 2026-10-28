@@ -7,12 +7,17 @@ import ScanForm from '../components/ScanForm.vue'
 import type { Scan } from '../types'
 
 const scans = ref<Scan[]>([])
+const totalScans = ref(0)
 const loading = ref(true)
 const technologies = computed(() => new Set(scans.value.flatMap(scan => scan.technologies.map(item => item.name))).size)
 const latest = computed(() => scans.value[0]?.created_at)
 
 onMounted(async () => {
-  try { scans.value = await api.scans() } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取检测记录。') }
+  try {
+    const [recent, count] = await Promise.all([api.scans(8), api.scanCount()])
+    scans.value = recent
+    totalScans.value = count.count
+  } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取检测记录。') }
   finally { loading.value = false }
 })
 
@@ -33,8 +38,8 @@ function hostOf(value: string) { try { return new URL(value).hostname } catch { 
     </section>
 
     <section class="stats-grid" aria-label="检测概览">
-      <article class="stat-card"><span class="stat-label">检测记录</span><strong>{{ scans.length.toString().padStart(2, '0') }}</strong><span class="stat-foot">保存在本机历史记录</span></article>
-      <article class="stat-card accent-stat"><span class="stat-label">已观察到的技术</span><strong>{{ technologies.toString().padStart(2, '0') }}</strong><span class="stat-foot">统计历史检测中的技术</span></article>
+      <article class="stat-card"><span class="stat-label">检测记录</span><strong>{{ totalScans.toString().padStart(2, '0') }}</strong><span class="stat-foot">保存在本机历史记录</span></article>
+      <article class="stat-card accent-stat"><span class="stat-label">已观察到的技术</span><strong>{{ technologies.toString().padStart(2, '0') }}</strong><span class="stat-foot">统计首页最近 8 条记录</span></article>
       <article class="stat-card"><span class="stat-label">最近检测</span><strong class="stat-date">{{ latest ? date(latest) : '—' }}</strong><span class="stat-foot">不与云端同步</span></article>
     </section>
 

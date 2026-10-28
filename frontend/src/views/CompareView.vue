@@ -3,23 +3,26 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { api } from '../api'
 import type { Scan } from '../types'
+import { useScanHistory } from '../useScanHistory'
 
-const scans = ref<Scan[]>([])
+const { scans, total, loading: historyLoading, loadingMore, hasMore, load, loadMore } = useScanHistory()
 const before = ref<number | undefined>()
 const after = ref<number | undefined>()
 const result = ref<Record<string, unknown> | null>(null)
-const loading = ref(false)
+const comparing = ref(false)
 
-onMounted(async () => {
-  try { scans.value = await api.scans() } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取检测历史。') }
-})
+onMounted(() => load().catch(error => ElMessage.error(error instanceof Error ? error.message : '无法读取检测历史。')))
+
+async function showMore() {
+  try { await loadMore() } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取更多检测记录。') }
+}
 
 async function compare() {
   if (!before.value || !after.value) return
-  loading.value = true
+  comparing.value = true
   try { result.value = await api.compare(before.value, after.value) }
   catch (error) { ElMessage.error(error instanceof Error ? error.message : '对比失败。') }
-  finally { loading.value = false }
+  finally { comparing.value = false }
 }
 
 const groups = [
@@ -38,9 +41,11 @@ function hostOf(value: string) { try { return new URL(value).hostname } catch { 
       <label><span class="field-label">较早的检测</span><el-select v-model="before" placeholder="选择一条检测记录"><el-option v-for="scan in scans" :key="scan.id" :label="`${new Date(scan.created_at).toLocaleString('zh-CN')} · ${scan.title || hostOf(scan.final_url)}`" :value="scan.id" /></el-select></label>
       <span class="compare-arrow">→</span>
       <label><span class="field-label">较新的检测</span><el-select v-model="after" placeholder="选择一条检测记录"><el-option v-for="scan in scans" :key="scan.id" :label="`${new Date(scan.created_at).toLocaleString('zh-CN')} · ${scan.title || hostOf(scan.final_url)}`" :value="scan.id" /></el-select></label>
-      <el-button type="primary" :loading="loading" :disabled="!before || !after || before === after" @click="compare">开始对比</el-button>
+      <el-button type="primary" :loading="comparing" :disabled="!before || !after || before === after" @click="compare">开始对比</el-button>
     </section>
-    <div v-if="result" class="comparison-grid">
+    <div class="history-pagination" v-if="hasMore"><el-button class="history-load-more" :loading="loadingMore" @click="showMore">加载更多检测记录（{{ scans.length }} / {{ total }}）</el-button></div>
+    <div v-if="historyLoading" class="empty-state">正在读取检测历史…</div>
+    <div v-else-if="result" class="comparison-grid">
       <article v-for="group in groups" :key="group.key" class="comparison-card" :class="group.tone"><div class="eyebrow">{{ group.title }}</div><p>{{ group.caption }}</p><div v-if="(result[group.key] as string[]).length" class="comparison-items"><span v-for="item in result[group.key] as string[]" :key="item">{{ item }}</span></div><div v-else class="no-diff">没有差异</div></article>
     </div>
     <div v-else-if="!scans.length" class="empty-state">至少保存两次检测，才能对比证据变化。</div>

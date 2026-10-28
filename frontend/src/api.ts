@@ -14,7 +14,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  scans: () => request<Scan[]>('/scans'),
+  scans: (limit = 30, offset = 0) => request<Scan[]>(`/scans?limit=${limit}&offset=${offset}`),
+  scanCount: () => request<{ count: number }>('/scans/count'),
   scan: (id: string | number) => request<Scan>(`/scans/${id}`),
   createScan: (url: string) => request<Scan>('/scans', { method: 'POST', body: JSON.stringify({ url, authorized: true }) }),
   compare: (first_scan_id: number, second_scan_id: number) => request<Record<string, unknown>>('/scans/compare', {

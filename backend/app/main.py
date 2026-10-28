@@ -9,6 +9,7 @@ import httpx
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.ai_service import generate_ai_analysis, test_ai_connection, validate_ai_base_url
@@ -133,10 +134,17 @@ def create_app(database_url: str | None = None) -> FastAPI:
             return _scan_dict(session, scan)
 
     @app.get("/api/scans", response_model=list[ScanOut])
-    def list_scans(limit: int = Query(default=30, ge=1, le=100)):
+    def list_scans(limit: int = Query(default=30, ge=1, le=100), offset: int = Query(default=0, ge=0)):
         with Session(app.state.engine) as session:
-            scans = session.exec(select(ScanRow).order_by(ScanRow.created_at.desc()).limit(limit)).all()
+            scans = session.exec(
+                select(ScanRow).order_by(ScanRow.created_at.desc(), ScanRow.id.desc()).offset(offset).limit(limit)
+            ).all()
             return [_scan_dict(session, scan, include_reports=False) for scan in scans]
+
+    @app.get("/api/scans/count")
+    def count_scans():
+        with Session(app.state.engine) as session:
+            return {"count": session.exec(select(func.count()).select_from(ScanRow)).one()}
 
     @app.get("/api/scans/{scan_id}", response_model=ScanOut)
     def get_scan(scan_id: int):

@@ -52,3 +52,16 @@
 | GitHub 回读 | Git remote 状态、GitHub 仓库元数据和 `main` commit API | 本地 `main` 与 `origin/main` 同步；远端仓库为私有；远端 main 指向 `27eb50547ef057c7c4263b5e390bf6f89bcf0f98`。Issue #1 可读取且包含先前学习材料。 |
 
 本轮没有修改应用代码；审查发现和后续改进项见 [AUDIT_REPORT.md](AUDIT_REPORT.md)。未执行项及边界见该审查记录。
+
+## 2026-10-28 历史分页修复与设置交互测试
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 历史分页回归（先红后绿） | `./.venv/bin/pytest tests/backend/test_api.py::test_scan_history_count_and_offset_reach_older_records -q` | 实现前按预期失败：`/api/scans/count` 被旧的 `/api/scans/{scan_id}` 路由当作 ID，返回 422；实现后退出码 0。测试建 35 条记录并验证总数、30+5 分页及无遗漏。 |
+| 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；24 passed in 5.07s。 |
+| 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
+| 前端测试（Node.js 24.22.1） | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend test` | 退出码 0；5 个测试文件、5 项测试通过，覆盖导航、扫描授权提交、报告分页、比较分页和设置保存/测试失败/清除。Node 24.22.1 符合 `package.json` 声明范围。 |
+| 前端类型检查与生产构建 | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 通过，Vite 转换 2249 个模块并构建完成。图表分块 540.47 kB（gzip 189.29 kB），仍触发 500 kB 体积提示。 |
+| 本机运行 | 重启 `./scripts/start-local.sh` 后用 curl 检查 | `/`、`/scans/1`、`/settings`、`/api/health` 均返回 HTTP 200；`/api/scans/count` 返回 1；`limit=1&offset=0` 返回 1 条，`offset=30` 返回 0 条；Uvicorn 监听 `127.0.0.1:8000`。 |
+
+中间一次完整 lint 检查指出新导入顺序未排序；修正后再次运行后端测试与 Ruff，均通过。前端测试中测试替身最初把比较按钮和分页按钮选成同一个元素；调整测试选择器后，完整前端套件通过。该问题仅发生在测试替身中，未改动产品交互逻辑。

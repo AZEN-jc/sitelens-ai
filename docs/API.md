@@ -6,7 +6,8 @@ All routes use the local FastAPI service under `/api`. Scan creation is synchron
 | --- | --- | --- |
 | `GET` | `/api/health` | Local service health |
 | `POST` | `/api/scans` | Scan `{ "url": "https://…", "authorized": true }` |
-| `GET` | `/api/scans?limit=30` | Recent scan summaries (AI content omitted, count retained), limit 1–100 |
+| `GET` | `/api/scans?limit=30&offset=0` | Paged scan summaries (AI content omitted, count retained), limit 1–100; offset is zero-based |
+| `GET` | `/api/scans/count` | Total number of saved scans |
 | `GET` | `/api/scans/{scan_id}` | Scan summary, evidence-backed technologies, saved AI reports |
 | `GET` | `/api/scans/{scan_id}/evidence` | Evidence grouped by technology |
 | `POST` | `/api/scans/compare` | Compare `{ "first_scan_id": 1, "second_scan_id": 2 }` |

@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { RouterLink } from 'vue-router'
-import { api, reportUrl } from '../api'
-import type { Scan } from '../types'
+import { reportUrl } from '../api'
+import { useScanHistory } from '../useScanHistory'
 
-const scans = ref<Scan[]>([])
-const loading = ref(true)
+const { scans, total, loading, loadingMore, hasMore, load, loadMore } = useScanHistory()
 function hostOf(value: string) { try { return new URL(value).hostname } catch { return value } }
-onMounted(async () => {
-  try { scans.value = await api.scans() } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取报告。') }
-  finally { loading.value = false }
-})
+onMounted(() => load().catch(error => ElMessage.error(error instanceof Error ? error.message : '无法读取报告。')))
+async function showMore() {
+  try { await loadMore() } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取更多报告。') }
+}
 </script>
 
 <template>
@@ -25,5 +24,6 @@ onMounted(async () => {
         <time>{{ new Date(scan.created_at).toLocaleString('zh-CN') }}</time><span class="export-links"><a :href="reportUrl(scan.id, 'html')" target="_blank" rel="noreferrer">导出 HTML ↗</a><a :href="reportUrl(scan.id, 'json')" target="_blank" rel="noreferrer">导出 JSON ↗</a></span>
       </article>
     </div>
+    <div class="history-pagination" v-if="hasMore"><el-button class="history-load-more" :loading="loadingMore" @click="showMore">加载更多检测记录（{{ scans.length }} / {{ total }}）</el-button></div>
   </div>
 </template>
