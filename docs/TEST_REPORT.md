@@ -65,3 +65,15 @@
 | 本机运行 | 重启 `./scripts/start-local.sh` 后用 curl 检查 | `/`、`/scans/1`、`/settings`、`/api/health` 均返回 HTTP 200；`/api/scans/count` 返回 1；`limit=1&offset=0` 返回 1 条，`offset=30` 返回 0 条；Uvicorn 监听 `127.0.0.1:8000`。 |
 
 中间一次完整 lint 检查指出新导入顺序未排序；修正后再次运行后端测试与 Ruff，均通过。前端测试中测试替身最初把比较按钮和分页按钮选成同一个元素；调整测试选择器后，完整前端套件通过。该问题仅发生在测试替身中，未改动产品交互逻辑。
+
+## 2026-10-28 依赖声明与 Python 发行包许可证
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 直接依赖元数据对照 | Python 读取 `.venv` 的 Python distribution metadata、前端 `node_modules` package manifest，与 `THIRD_PARTY_NOTICES.md` 对照 | 声明表所列直接依赖版本与包内声明许可证字段一致；193 个前端 package manifest 未发现 GPL 系列、unlicensed 或 undeclared 标记。此检查未访问上游许可证全文。 |
+| Python wheel/sdist 构建 | `uv build --offline --out-dir /tmp/sitelens-license-fixed` | 退出码 0，离线构建 wheel 和 sdist；wheel 的 `METADATA` 包含 `License-Expression: GPL-3.0-or-later`；wheel 与 sdist 均包含 `LICENSE`。 |
+| 锁文件一致性 | `uv lock --check --offline` | 退出码 0；依赖锁无需更新。 |
+| 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；24 passed in 8.44s。 |
+| 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
+
+修改前对基线 wheel 的同一 SPDX 元数据断言按预期失败，证明原包元数据缺少许可证表达式；新增 `pyproject.toml` 声明后，离线构建和断言通过。

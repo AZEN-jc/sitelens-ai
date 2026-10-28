@@ -2,7 +2,7 @@
 
 SiteLens AI is licensed under GPL-3.0-or-later. No source code or fingerprint dataset has been copied from WhatWeb, HTTPArchive/wappalyzer, or wappalyzer-next. The rules in `backend/fingerprints/technologies.json` were authored for this project. Reference-project links and licensing boundaries are recorded in `docs/TECH_SELECTION.md`.
 
-Versions and declared package licenses below were inspected from the installed package metadata on 2026-10-25. Dependency lockfiles pin the resolved dependency graph. No local modifications were made to these packages.
+Versions and declared package licenses below were checked against installed package metadata on 2026-10-28; the listed direct Python and frontend dependencies match. A local scan of 193 installed frontend package manifests found no GPL-family, unlicensed, or undeclared license fields. Dependency lockfiles pin the resolved dependency graph. No local modifications were made to these packages. Package metadata is not a substitute for reviewing each upstream license before redistribution.
 
 ## Python packages
 
