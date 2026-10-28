@@ -37,3 +37,18 @@
 ## 答辩使用
 
 演示前再次启动服务并运行关键测试。只有对自己拥有或获得明确授权的网站才能进行实时扫描；没有授权目标时，使用受控测试结果时必须标明是测试数据，而不是现场网站扫描结果。
+
+## 2026-10-28 完整审查复验
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 初始服务检查 | `curl` 请求 `http://127.0.0.1:8000/`、`/scans/1`、`/api/health` | 启动前连接失败，curl 退出码 7；随后通过现有启动器启动服务。 |
+| 启动本机应用 | `./scripts/start-local.sh` | Uvicorn 在 `127.0.0.1:8000` 启动并保持运行。 |
+| 页面/API 冒烟 | curl 请求 `/`、`/scans/1`、`/settings`、`/api/health`、`/api/scans/1` 和设置页 JS 资源 | 全部 HTTP 200；健康接口返回 `{"status":"ok"}`；历史列表当前返回 1 条记录。页面路径检查只验证 SPA 响应，不等价于浏览器点击操作。 |
+| 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；23 passed in 4.85s。 |
+| 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
+| 前端测试 | `pnpm --dir frontend test` | 退出码 0；2 个测试通过。pnpm 提示 Node.js v23.11.0 不符合 package.json 的支持版本范围。 |
+| 前端类型检查与生产构建 | `pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 及 Vite 构建成功，转换 2248 个模块。`charts` 分块 540.47 kB（gzip 188.56 kB），触发 500 kB 提示。 |
+| GitHub 回读 | Git remote 状态、GitHub 仓库元数据和 `main` commit API | 本地 `main` 与 `origin/main` 同步；远端仓库为私有；远端 main 指向 `27eb50547ef057c7c4263b5e390bf6f89bcf0f98`。Issue #1 可读取且包含先前学习材料。 |
+
+本轮没有修改应用代码；审查发现和后续改进项见 [AUDIT_REPORT.md](AUDIT_REPORT.md)。未执行项及边界见该审查记录。

@@ -64,6 +64,7 @@ pnpm dev
 - [5–8 分钟答辩稿、现场演示与常见问题](docs/DEFENSE_SCRIPT.md)
 - [AI 辅助使用记录](docs/AI_USAGE_LOG.md)
 - [验收记录](docs/TEST_REPORT.md)
+- [完整审查记录与后续改进项](docs/AUDIT_REPORT.md)
 - [架构与 API 文档](docs/ARCHITECTURE.md) · [API 参考](docs/API.md)
 - [技术选型记录](docs/TECH_SELECTION.md) · [第三方声明](THIRD_PARTY_NOTICES.md)
 
