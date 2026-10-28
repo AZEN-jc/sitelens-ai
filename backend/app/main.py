@@ -29,6 +29,17 @@ from app.schemas import (
 from app.security import TargetError
 
 DEFAULT_DATABASE = Path(__file__).parents[2] / "data" / "sitelens.sqlite"
+CATEGORY_NAMES_ZH = {
+    "Analytics": "分析统计",
+    "CDN": "内容分发网络",
+    "CMS": "内容管理系统",
+    "Frontend framework": "前端框架",
+    "JavaScript library": "JavaScript 库",
+    "Static site tool": "静态站点工具",
+    "UI framework": "UI 框架",
+    "Web framework": "Web 框架",
+    "Web server": "Web 服务器",
+}
 
 
 def _technology_dict(session: Session, technology: TechnologyRow) -> dict:
@@ -88,15 +99,15 @@ def create_app(database_url: str | None = None) -> FastAPI:
     @app.post("/api/scans", response_model=ScanOut)
     async def create_scan(body: ScanRequest):
         if not body.authorized:
-            raise HTTPException(400, "Confirm that you own or are authorized to analyze this website.")
+            raise HTTPException(400, "请先确认你拥有该网站，或已获准分析其公开技术特征。")
         try:
             page = await fetch_page(body.url)
         except TargetError as exc:
             raise HTTPException(400, str(exc)) from exc
         except (httpx.TimeoutException, TimeoutError) as exc:
-            raise HTTPException(504, "The website request timed out.") from exc
+            raise HTTPException(504, "网站请求超时。") from exc
         except httpx.HTTPError as exc:
-            raise HTTPException(502, "The website could not be fetched.") from exc
+            raise HTTPException(502, "无法获取网站响应。") from exc
 
         detections = detect(page.signals())
         with Session(app.state.engine) as session:
@@ -151,14 +162,14 @@ def create_app(database_url: str | None = None) -> FastAPI:
         with Session(app.state.engine) as session:
             scan = session.get(ScanRow, scan_id)
             if not scan:
-                raise HTTPException(404, "Scan not found.")
+                raise HTTPException(404, "未找到这条检测记录。")
             return _scan_dict(session, scan)
 
     @app.get("/api/scans/{scan_id}/evidence")
     def get_evidence(scan_id: int):
         with Session(app.state.engine) as session:
             if not session.get(ScanRow, scan_id):
-                raise HTTPException(404, "Scan not found.")
+                raise HTTPException(404, "未找到这条检测记录。")
             technologies = session.exec(select(TechnologyRow).where(TechnologyRow.scan_id == scan_id)).all()
             return [{"technology": item.name, "evidence": _technology_dict(session, item)["evidence"]} for item in technologies]
 
@@ -167,7 +178,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         with Session(app.state.engine) as session:
             first, second = session.get(ScanRow, body.first_scan_id), session.get(ScanRow, body.second_scan_id)
             if not first or not second:
-                raise HTTPException(404, "Both scans must exist.")
+                raise HTTPException(404, "用于对比的两条检测记录必须都存在。")
             before = [_technology_dict(session, item) for item in session.exec(select(TechnologyRow).where(TechnologyRow.scan_id == first.id)).all()]
             after = [_technology_dict(session, item) for item in session.exec(select(TechnologyRow).where(TechnologyRow.scan_id == second.id)).all()]
             normalized = lambda rows: [{"name": item["name"], "evidence": [f"{ev['source']}:{ev['matched']}" for ev in item["evidence"]]} for item in rows]
@@ -196,7 +207,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
     async def ai_test():
         config = app.state.ai_config
         if not config:
-            raise HTTPException(400, "Configure an AI service first.")
+            raise HTTPException(400, "请先配置 AI 服务。")
         try:
             return {"ok": await test_ai_connection(config)}
         except (httpx.HTTPError, RuntimeError, ValueError) as exc:
@@ -205,14 +216,14 @@ def create_app(database_url: str | None = None) -> FastAPI:
     @app.post("/api/ai/analyze")
     async def ai_analyze(body: AIAnalysisRequest):
         if not body.confirm_data_sent:
-            raise HTTPException(400, "Confirm the displayed analysis data before sending it to the AI service.")
+            raise HTTPException(400, "请先确认页面展示的分析数据，再发送到 AI 服务。")
         config = app.state.ai_config
         if not config:
-            raise HTTPException(400, "Configure an AI service first.")
+            raise HTTPException(400, "请先配置 AI 服务。")
         with Session(app.state.engine) as session:
             scan = session.get(ScanRow, body.scan_id)
             if not scan:
-                raise HTTPException(404, "Scan not found.")
+                raise HTTPException(404, "未找到这条检测记录。")
             scan_data = _scan_dict(session, scan)
         minimized = {
             key: scan_data[key] for key in ("url", "final_url", "status_code", "title")
@@ -225,7 +236,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         try:
             result = await generate_ai_analysis(config, minimized)
         except (httpx.HTTPError, RuntimeError, ValueError) as exc:
-            raise HTTPException(502, f"AI analysis failed: {exc}") from exc
+            raise HTTPException(502, f"AI 分析失败：{exc}") from exc
         content = result.content
         secret = config.api_key.get_secret_value()
         if len(secret) >= 8:
@@ -248,7 +259,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         with Session(app.state.engine) as session:
             report = session.get(AIReportRow, report_id)
             if not report:
-                raise HTTPException(404, "Report not found.")
+                raise HTTPException(404, "未找到这份 AI 分析报告。")
             scan = session.get(ScanRow, report.scan_id)
             return {"report": {"id": report.id, "model": report.model, "content": report.content, "created_at": report.created_at}, "scan": _scan_dict(session, scan)}
 
@@ -257,13 +268,13 @@ def create_app(database_url: str | None = None) -> FastAPI:
         with Session(app.state.engine) as session:
             scan = session.get(ScanRow, scan_id)
             if not scan:
-                raise HTTPException(404, "Scan not found.")
+                raise HTTPException(404, "未找到这条检测记录。")
             data = _scan_dict(session, scan)
         if format == "json":
             return Response(json.dumps(data, ensure_ascii=False, default=str, indent=2), media_type="application/json")
         confidence_names = {"high": "高", "medium": "中", "low": "低"}
         technologies = "".join(
-            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(item['category'])} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
+            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(CATEGORY_NAMES_ZH.get(item['category'], item['category']))} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
             + "".join(f"<p><b>证据来源：{html.escape(ev['source'])}</b>：{html.escape(ev['matched'])}</p>" for ev in item["evidence"])
             + "</section>" for item in data["technologies"]
         )
@@ -289,7 +300,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         @app.get("/{path:path}", include_in_schema=False)
         def frontend(path: str):
             if path == "api" or path.startswith("api/"):
-                raise HTTPException(404, "API endpoint not found.")
+                raise HTTPException(404, "未找到该 API 接口。")
             return FileResponse(frontend_dist / "index.html")
     return app
 

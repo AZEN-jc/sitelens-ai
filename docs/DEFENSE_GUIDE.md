@@ -1,27 +1,27 @@
-# Demo and defense guide
+# 答辩演示速查
 
-For the full 5–8 minute Chinese speaking script, timed demo path, and expanded Q&A, see [DEFENSE_SCRIPT.md](DEFENSE_SCRIPT.md). The checklist below is a quick run sheet.
+完整的 5–8 分钟中文讲稿、时间分配和扩展问答见 [DEFENSE_SCRIPT.md](DEFENSE_SCRIPT.md)。本文件用于答辩当天快速检查演示顺序。
 
-## Live walkthrough
+## 现场演示顺序
 
-1. Start the app locally and open the Dashboard.
-2. Enter a website you own or have permission to analyze; confirm authorization.
-3. Explain that collection is an ordinary public HTTP GET, with redirect revalidation, public-address checks, pinned DNS, timeout, redirect, and body-size limits.
-4. Open a technology card and show its source and matched value. Explain that rule weights create an internal confidence level, not a statistical probability.
-5. Show the architecture graph and state that it is an inference from co-observed signals, not knowledge of the site’s private deployment.
-6. If an AI endpoint is available, configure it in Settings, review the displayed payload, confirm the send, and open the generated text report. Otherwise demonstrate previously saved AI output only as a historical result.
-7. Compare two saved scans. Describe missing matches as “not observed now,” not proof of removal.
-8. Export HTML or JSON; for PDF, use the browser print dialog.
+1. 启动本机应用，打开首页，先说明它是单用户本机工具。
+2. 输入自己拥有或明确获准分析的网站，并勾选授权确认。
+3. 说明扫描器只发起普通公开 HTTP GET；URL/DNS、公网地址、固定 IP、逐跳重定向、超时和响应大小都有限制。
+4. 打开一张技术卡片，再进入“识别证据”，展示命中来源和值。解释规则权重得到的是项目内部置信等级，不是 85% 这类统计概率。
+5. 打开技术关系图，明确说明它只是由共同出现的技术生成的“推测关系”，不是目标网站真实内部拓扑。
+6. 如果现场有可用 AI 服务，在“设置”里配置后先展示将发送的数据，再确认分析；如果没有，就只展示历史保存结果，并明确它是历史结果。
+7. 比较两次历史检测。遇到某项技术没再次出现时，用“本次未观察到”描述，不说“已经删除”。
+8. 导出 HTML 或 JSON；需要 PDF 时使用浏览器打印功能。
 
-## Offline test fixtures
+## 离线受控测试站点
 
-The repository includes two controlled HTML pages under `demo-sites/`. Automated tests serve them over loopback and pass the requests through the IP-pinned transport using test-only resolver substitution. The production scanner itself continues to block loopback and private destinations.
+仓库在 `demo-sites/` 中包含两个受控 HTML 页面。自动化测试通过测试专用 resolver 和固定 IP 传输访问这些页面，用于验证真实解析与识别流程。这个测试入口不会改变正式扫描器的限制；正式扫描器仍会拒绝 127.0.0.1 和私网地址。
 
-## Common questions
+## 常见追问速答
 
-- **Can the system know a hidden server framework?** No. It reports observable public evidence and its limits.
-- **Does high confidence mean an 85% probability?** No. It is a project-internal sum of rule weights capped at 100.
-- **Does AI verify a detection?** No. The rule engine owns detection; AI explains supplied evidence and uncertainty.
-- **Why block local scan targets but allow a local AI endpoint?** The scan URL is untrusted user input and could expose internal services. A private AI endpoint is an explicit configuration choice, isolated from the scanner.
-- **Where are API keys saved?** Backend process memory only, until restart; never in SQLite, browser storage, reports, or API responses.
-- **Does a missing match mean a site removed the technology?** No. It means only that the current response did not expose matching evidence.
+- **能识别完全隐藏的后端框架吗？** 不能。系统只根据公开响应证据判断，并保留不确定性。
+- **高置信度等于 85% 概率吗？** 不等于。它是规则权重累计后封顶 100 的内部等级。
+- **AI 会决定技术是否存在吗？** 不会。技术识别由规则引擎完成，AI 只解释已有结果和证据。
+- **为什么扫描器不能扫本机，但 AI 可以连本机？** 扫描 URL 是不可信输入，可能被用于访问内部服务；AI 地址是用户主动配置的独立信任边界。
+- **API Key 保存在哪里？** 只在后端进程内存中，服务重启即清除，不写 SQLite、浏览器存储、报告或配置状态响应。
+- **历史里少了一项技术就代表网站删掉了吗？** 不能这样判断，只能说这次响应没有再次观察到对应证据。

@@ -24,7 +24,7 @@ def test_rejects_unsafe_target_urls(url):
 
 
 def test_rejects_hostname_with_any_private_dns_answer():
-    with pytest.raises(TargetError):
+    with pytest.raises(TargetError, match="禁止检测"):
         validate_target("https://example.test", resolver=resolver_for("93.184.216.34", "10.0.0.4"))
 
 

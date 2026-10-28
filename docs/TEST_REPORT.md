@@ -77,3 +77,25 @@
 | 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
 
 修改前对基线 wheel 的同一 SPDX 元数据断言按预期失败，证明原包元数据缺少许可证表达式；新增 `pyproject.toml` 声明后，离线构建和断言通过。
+
+## 2026-10-29 Ponytail 最终审查与中文体验复验
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；24 passed in 4.13s。 |
+| 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
+| 前端测试（项目支持的 Node 24 runtime） | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend test` | 退出码 0；7 个测试文件、7 项测试全部通过，耗时 7.44s。包含导航、扫描授权、历史分页、设置交互、无效检测深链错误状态和类别中文映射。 |
+| 前端类型检查与生产构建 | 同一 Node 24 runtime 下运行 `pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 与 Vite 构建成功，转换 2250 个模块，构建耗时 16.06s。`charts` 分块 540.47 kB（gzip 189.29 kB），仍有 Vite 500 kB 体积提示。 |
+| diff 格式检查 | `git diff --check` | 退出码 0。 |
+| 最新服务启动 | `./scripts/start-local.sh` 作为持续命令会话运行 | Uvicorn 使用当前后端和刚生成的前端 `dist`，监听 `127.0.0.1:8000`。 |
+| 页面/API 直连冒烟 | Python `urllib.request` 使用 `ProxyHandler({})` 明确禁用环境代理后，请求 `/`、`/settings`、`/scans/999999`、`/api/health`、`/api/scans/999999`、`POST /api/scans`（未授权）、`/api/scans/count`、`/scans/1`、`/api/scans/1` 及 HTML/JSON 报告 | 首页、设置、两个 SPA 深链、健康、历史计数、历史详情及两种报告均得到预期 200；不存在记录返回 404 `未找到这条检测记录。`；未授权扫描返回 400 `请先确认你拥有该网站，或已获准分析其公开技术特征。`。没有发起新的外部扫描。 |
+| 静态产物一致性 | 将运行中 `/` 响应字节与 `frontend/dist/index.html` 比较 | 完全一致：657 bytes，证明运行中服务使用本轮最新前端构建。 |
+
+本轮中间一次使用默认 `urllib.request` 的冒烟受宿主环境 `HTTP_PROXY` / `HTTPS_PROXY` 影响，返回 502；当时环境没有 `NO_PROXY`。该返回不来自 SiteLens 应用。随后改为显式禁用代理并使用持续 Uvicorn 会话，完成上表直连复验。
+
+### 本轮仍未执行
+
+- 没有对新的外部网站发起扫描；历史记录中的 `scan #1` 仅用于读取现有结果与报告。
+- 没有调用真实 AI 服务；AI 成功、失败、异常输出和密钥生命周期继续由自动化测试覆盖。
+- 没有执行鼠标/键盘浏览器自动化、视觉回归、无障碍扫描或浏览器“打印为 PDF”。页面路径 HTTP 200 只能证明 SPA 路由可访问。
+- 没有运行依赖漏洞数据库扫描，因此不声称第三方依赖不存在已知漏洞。

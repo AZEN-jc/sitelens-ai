@@ -1,35 +1,45 @@
-# Architecture
+# 系统架构
 
 ```text
-Browser (127.0.0.1)
-  ├─ Vue 3 / TypeScript UI
-  └─ /api requests
+浏览器（127.0.0.1）
+  ├─ Vue 3 / TypeScript 界面
+  └─ /api 请求
        └─ FastAPI
-            ├─ URL validation → DNS resolution → IP-pinned HTTP GET
-            ├─ HTML/meta/resource parsing → JSON fingerprint engine
-            ├─ SQLite: scan summaries, technologies, evidence, AI reports
-            └─ optional OpenAI-compatible endpoint (explicit user configuration)
+            ├─ URL 校验 → DNS 解析 → 固定已校验 IP 的 HTTP GET
+            ├─ HTML / Meta / 资源信号解析 → JSON 指纹规则
+            ├─ SQLite：检测摘要、技术、证据、AI 报告
+            └─ 可选 OpenAI 兼容服务（用户显式配置）
 ```
 
-The production launcher binds Uvicorn to `127.0.0.1`; Vite proxies `/api` to the same local API during development. The app has no account or authentication layer and is designed for one user on their own machine.
+正式启动脚本把 Uvicorn 绑定到 `127.0.0.1`。开发模式下 Vite 把 `/api` 代理到同一个本机 API；生产构建后由 FastAPI 直接提供前端静态文件。当前版本没有账号系统，定位是单用户本机工具。
 
-## Scan data flow
+## 一次检测的数据流
 
-1. The user attests that the target is authorized.
-2. The scanner accepts HTTP(S) URLs without embedded credentials, resolves the host, rejects any non-global DNS answer, and connects to the selected checked IP while retaining the hostname for Host and TLS validation.
-3. Redirects are followed manually, with the same validation and pinning repeated for each destination. Proxy environment variables are ignored. Request timeout is 10 seconds, redirect limit is five, and response body limit is 5 MiB.
-4. Only status, title, selected response headers, bounded meta values, and script/style paths are persisted. The response HTML is transient and never stored.
-5. Rules match source-specific evidence; duplicated evidence is counted once and the summed weight is capped at 100. Scores below 40 are low, 40–69 medium, and 70–100 high.
+1. 用户输入 URL，并确认自己拥有目标或已获授权。
+2. `validate_target` 只接受 HTTP(S)，拒绝 URL 中的账号凭据，解析主机名，并拒绝任意私网、本机或保留地址。
+3. 网络层连接到已经校验过的公网 IP，同时保留原主机名用于 Host 与 TLS 校验，降低 DNS 解析后目标被替换的风险。
+4. 重定向由应用手动处理，每一跳都会重新执行 URL、DNS 和公网地址检查。扫描请求忽略环境代理。当前限制是 10 秒超时、最多 5 次重定向、最多读取 5 MiB 响应体。
+5. 解析器从响应中提取状态码、标题、有限响应头、Meta，以及脚本/样式资源路径。完整 HTML 只在当前内存流程中用于匹配，不写入 SQLite。
+6. 指纹引擎按证据来源匹配 JSON 规则。重复证据只计一次，同一技术的权重累加并封顶 100；低于 40 为低、40–69 为中、70–100 为高。它是项目内部评分，不是统计概率。
+7. SQLite 保存检测摘要、技术、有限证据和用户主动生成的 AI 报告，前端再通过检测 ID 读取并展示。
 
-## AI data flow
+## AI 数据流
 
-The user configures an OpenAI-compatible Base URL, key, and model. Configuration is held in the FastAPI process only. Before an analysis request, the UI displays the exact minimized payload (URL without query/fragment, response status/title, and technology evidence) and asks the user to confirm. The backend does not follow provider redirects, caps the response at 256 KiB, validates the chat response shape, redacts an echoed key, and stores only the resulting analysis text/model. Vue interpolates the text; it is never interpreted as HTML.
+用户在设置页配置 OpenAI 兼容的 Base URL、API Key 和模型。配置只保存在 FastAPI 进程内存，服务重启后清除。
 
-A private/local AI endpoint is permitted only after the user explicitly configures it. That exception does not apply to website scanning.
+在真正发送 AI 分析前，页面会展示最小化后的结构化数据，包括去掉查询参数/片段的 URL、状态码、标题、技术和匹配证据，并要求用户确认。后端不会自动跟随 AI 提供方的重定向，响应大小限制为 256 KiB，并校验 Chat Completions 返回结构。如果模型原样回显了完整密钥，后端会在保存前替换。数据库只保存最终分析文本与模型名。
 
-## Limits and uncertainty
+前端使用 Vue 文本插值展示 AI 与网站内容，不使用 `v-html` 解释这些不可信文本。
 
-- Fingerprints can miss obfuscated, bundled, or server-only technologies. Absence means “not observed,” not “removed.”
-- The architecture graph connects technologies observed in one response and is labeled as a hypothesis, not a verified internal deployment diagram.
-- The local app has no authentication. Keep it bound to loopback and do not expose it on a shared network.
-- The authorization checkbox records user attestation; it cannot prove site ownership.
+## 两个不同的网络信任边界
+
+- **网站扫描目标**：来自用户输入，必须是校验后的公网 HTTP(S) 地址；每次重定向重新校验并固定目标 IP。
+- **AI Base URL**：由用户主动配置，可以是本机或私网服务。这个例外只用于 AI 连接，不能传递给扫描器。
+
+## 当前局限
+
+- 静态 HTTP 指纹可能遗漏被混淆、打包、仅服务端可见或只有浏览器动态执行后才出现的技术。
+- “未匹配”只代表当前响应没有观察到证据，不代表网站已经删除该技术。
+- 架构关系图依据同一次检测中共同出现的技术生成，并明确标记为推测，不代表知道目标网站真实内部部署结构。
+- 本机服务没有认证，只应绑定回环地址，不应暴露到共享网络。
+- 授权勾选只记录用户声明，软件本身无法证明网站所有权。

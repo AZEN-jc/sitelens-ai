@@ -10,7 +10,7 @@ from app.schemas import AIAnalysisResult, AIConfigIn
 def validate_ai_base_url(value: str) -> str:
     url = httpx.URL(value.strip())
     if url.scheme not in {"http", "https"} or not url.host or url.userinfo or url.query or url.fragment:
-        raise ValueError("Base URL must be an HTTP(S) endpoint without credentials, query, or fragment.")
+        raise ValueError("AI 接口地址必须是 HTTP(S) 地址，且不能包含账号凭据、查询参数或片段。")
     return str(url).rstrip("/")
 
 
@@ -19,7 +19,7 @@ async def _read_limited(response: httpx.Response, limit: int = 256 * 1024) -> by
     async for chunk in response.aiter_bytes():
         data.extend(chunk)
         if len(data) > limit:
-            raise ValueError("The AI service response exceeded the 256 KiB limit.")
+            raise ValueError("AI 服务响应超过 256 KiB 上限。")
     return bytes(data)
 
 
@@ -32,11 +32,11 @@ async def _post(config: AIConfigIn, payload: dict) -> dict:
     ) as response:
         content = await _read_limited(response)
         if response.is_error:
-            raise RuntimeError(f"AI service returned HTTP {response.status_code}.")
+            raise RuntimeError(f"AI 服务返回 HTTP {response.status_code}。")
     try:
         return json.loads(content)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-        raise ValueError("The AI service returned invalid JSON.") from exc
+        raise ValueError("AI 服务返回了无效 JSON。") from exc
 
 
 async def test_ai_connection(config: AIConfigIn) -> bool:
@@ -65,7 +65,7 @@ async def generate_ai_analysis(config: AIConfigIn, scan: dict) -> AIAnalysisResu
     try:
         text = response["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:
-        raise ValueError("The AI service response did not contain a chat message.") from exc
+        raise ValueError("AI 服务响应中没有有效的对话消息。") from exc
     if not isinstance(text, str) or not text.strip() or len(text) > 20_000:
-        raise ValueError("The AI service returned an invalid analysis.")
+        raise ValueError("AI 服务返回了无效的分析内容。")
     return AIAnalysisResult(model=config.model, content=text.strip())

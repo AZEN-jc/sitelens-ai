@@ -7,7 +7,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
   if (!response.ok) {
     const data = await response.json().catch(() => ({}))
-    throw new Error(data.detail || data.error || `Request failed (${response.status})`)
+    throw new Error(data.detail || data.error || `请求失败（状态码 ${response.status}）`)
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>

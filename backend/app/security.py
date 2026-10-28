@@ -33,17 +33,17 @@ def validate_target(
     try:
         url = httpx.URL(value.strip())
     except (httpx.InvalidURL, ValueError) as exc:
-        raise TargetError("Enter a valid website URL.") from exc
+        raise TargetError("请输入有效的网站 URL。") from exc
     if url.scheme not in {"http", "https"} or not url.host or url.userinfo:
-        raise TargetError("Only HTTP(S) URLs without embedded credentials are allowed.")
+        raise TargetError("只允许不含账号凭据的 HTTP(S) URL。")
 
     host = url.host.lower()
     try:
         port = url.port or (443 if url.scheme == "https" else 80)
     except ValueError as exc:
-        raise TargetError("The target URL contains an invalid port.") from exc
+        raise TargetError("目标 URL 包含无效端口。") from exc
     if not 1 <= port <= 65535:
-        raise TargetError("The target URL contains an invalid port.")
+        raise TargetError("目标 URL 包含无效端口。")
     try:
         literal = ipaddress.ip_address(host)
         answers = [str(literal)]
@@ -52,15 +52,15 @@ def validate_target(
             records = resolver(host, port, type=socket.SOCK_STREAM)
             answers = list(dict.fromkeys(record[4][0].split("%", 1)[0] for record in records))
         except (OSError, ValueError) as exc:
-            raise TargetError("The target hostname could not be resolved.") from exc
+            raise TargetError("无法解析目标主机名。") from exc
     if not answers:
-        raise TargetError("The target hostname has no address.")
+        raise TargetError("目标主机名没有可用地址。")
     try:
         addresses = tuple(str(ipaddress.ip_address(address)) for address in answers)
     except ValueError as exc:
-        raise TargetError("The target hostname resolved to an invalid address.") from exc
+        raise TargetError("目标主机名解析到了无效地址。") from exc
     if any(not ipaddress.ip_address(address).is_global for address in addresses):
-        raise TargetError("Targets resolving to private, local, or reserved addresses are blocked.")
+        raise TargetError("禁止检测解析到私网、本机或保留地址的目标。")
     return ValidatedTarget(url=url, host=host, port=port, addresses=addresses)
 
 

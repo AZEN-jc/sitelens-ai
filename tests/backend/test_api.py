@@ -51,6 +51,7 @@ async def test_requires_authorization_and_escapes_report_html(tmp_path, monkeypa
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
         denied = await client.post("/api/scans", json={"url": "https://example.test"})
         assert denied.status_code == 400
+        assert "请先确认" in denied.json()["detail"]
         scan = await client.post("/api/scans", json={"url": "https://example.test/?token=secret", "authorized": True})
         assert "token=secret" not in scan.json()["url"]
         report = await client.get(f"/api/reports/{scan.json()['id']}/export?format=html")
@@ -58,6 +59,8 @@ async def test_requires_authorization_and_escapes_report_html(tmp_path, monkeypa
         assert "&lt;script&gt;alert(1)&lt;/script&gt;" in report.text
         assert "网站检测报告" in report.text
         assert "公开响应证据" in report.text
+        assert "类别：Web 服务器" in report.text
+        assert "类别：Web server" not in report.text
         assert "token=secret" not in report.text
 
 

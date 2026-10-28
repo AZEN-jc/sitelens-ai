@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api, reportUrl } from '../api'
+import { technologyCategoryLabel } from '../labels'
 import type { Scan } from '../types'
 
 const TechnologyChart = defineAsyncComponent(() => import('../components/TechnologyChart.vue'))
@@ -11,6 +12,7 @@ const ArchitectureGraph = defineAsyncComponent(() => import('../components/Archi
 const route = useRoute()
 const scan = ref<Scan | null>(null)
 const loading = ref(true)
+const loadError = ref('')
 const activeTab = ref('overview')
 const sending = ref(false)
 const confirmed = ref(false)
@@ -19,10 +21,15 @@ function hostOf(value: string) { try { return new URL(value).hostname } catch { 
 
 async function load() {
   loading.value = true
+  scan.value = null
+  loadError.value = ''
   try {
     scan.value = await api.scan(String(route.params.id))
     aiConfigured.value = (await api.aiStatus()).configured
-  } catch (error) { ElMessage.error(error instanceof Error ? error.message : '无法读取这条检测记录。') }
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : '无法读取这条检测记录。'
+    ElMessage.error(loadError.value)
+  }
   finally { loading.value = false }
 }
 onMounted(load)
@@ -30,7 +37,10 @@ watch(() => route.params.id, load)
 
 const categories = computed(() => {
   const counts = new Map<string, number>()
-  for (const tech of scan.value?.technologies || []) counts.set(tech.category, (counts.get(tech.category) || 0) + 1)
+  for (const tech of scan.value?.technologies || []) {
+    const category = technologyCategoryLabel(tech.category)
+    counts.set(category, (counts.get(category) || 0) + 1)
+  }
   return [...counts].map(([name, value]) => ({ name, value }))
 })
 const aiPreview = computed(() => scan.value && ({
@@ -76,7 +86,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
         <div v-if="scan.technologies.length" class="technology-grid">
           <article v-for="tech in scan.technologies" :key="tech.name" class="technology-card">
             <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级</span></div>
-            <h3>{{ tech.name }}</h3><span class="tech-category">{{ tech.category }}</span><div class="score-track"><i :style="{ width: `${tech.score}%` }"></i></div>
+            <h3>{{ tech.name }}</h3><span class="tech-category">{{ technologyCategoryLabel(tech.category) }}</span><div class="score-track"><i :style="{ width: `${tech.score}%` }"></i></div>
             <button class="evidence-link" @click="activeTab = 'evidence'">{{ tech.evidence.length }} 条证据 <span>↗</span></button>
           </article>
         </div>
@@ -89,7 +99,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
 
     <section v-else-if="activeTab === 'evidence'" class="tab-content">
       <div class="section-title-row compact"><div><div class="eyebrow">追溯每一条匹配</div><h2>识别证据</h2></div></div>
-      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
+      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ technologyCategoryLabel(tech.category) }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
       <div v-if="!scan.technologies.length" class="empty-state">没有匹配到证据。</div>
     </section>
 
@@ -108,5 +118,13 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
       </div>
     </section>
     <footer class="page-footer"><span>检测记录 {{ String(scan.id).padStart(4, '0') }}</span><span>本次未观察到证据，不代表技术已被移除。</span><a :href="reportUrl(scan.id, 'json')" target="_blank" rel="noreferrer">下载 JSON ↗</a></footer>
+  </div>
+  <div v-else class="page-wrap">
+    <div class="empty-state scan-load-error" role="alert">
+      <span class="empty-symbol">!</span>
+      <b>无法显示这条检测记录</b>
+      <span>{{ loadError || '这条记录可能不存在，或本机服务暂时无法读取它。' }}</span>
+      <RouterLink to="/" class="text-link">返回概览 ↗</RouterLink>
+    </div>
   </div>
 </template>

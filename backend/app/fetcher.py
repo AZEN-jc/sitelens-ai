@@ -117,18 +117,18 @@ async def _fetch_page(value: str) -> PageSnapshot:
             if response.status_code in {301, 302, 303, 307, 308}:
                 location = response.headers.get("location")
                 if not location:
-                    raise TargetError("The website returned a redirect without a destination.")
+                    raise TargetError("网站返回了没有目标地址的重定向。")
                 if redirect_count == MAX_REDIRECTS:
-                    raise TargetError("The website exceeded the redirect limit.")
+                    raise TargetError("网站重定向次数超过限制。")
                 current = str(target.url.join(location))
                 continue
             body = bytearray()
             async for chunk in response.aiter_bytes():
                 body.extend(chunk)
                 if len(body) > MAX_BODY_BYTES:
-                    raise TargetError("The website response exceeded the 5 MiB scan limit.")
+                    raise TargetError("网站响应超过 5 MiB 检测上限。")
             headers = dict(response.headers)
             status = response.status_code
             final_url = str(target.url)
         return parse_snapshot(original, final_url, status, headers, bytes(body))
-    raise TargetError("The website exceeded the redirect limit.")
+    raise TargetError("网站重定向次数超过限制。")
