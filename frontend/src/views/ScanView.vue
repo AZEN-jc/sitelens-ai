@@ -16,21 +16,30 @@ const loadError = ref('')
 const activeTab = ref('overview')
 const sending = ref(false)
 const confirmed = ref(false)
-const aiConfigured = ref(false)
+const aiConfigured = ref<boolean | null>(null)
+const aiStatusError = ref('')
 function hostOf(value: string) { try { return new URL(value).hostname } catch { return value } }
 
 async function load() {
   loading.value = true
   scan.value = null
   loadError.value = ''
+  aiConfigured.value = null
+  aiStatusError.value = ''
   try {
     scan.value = await api.scan(String(route.params.id))
-    aiConfigured.value = (await api.aiStatus()).configured
   } catch (error) {
     loadError.value = error instanceof Error ? error.message : '无法读取这条检测记录。'
     ElMessage.error(loadError.value)
+    loading.value = false
+    return
   }
-  finally { loading.value = false }
+  try {
+    aiConfigured.value = (await api.aiStatus()).configured
+  } catch {
+    aiStatusError.value = '暂时无法读取 AI 配置状态。'
+  }
+  loading.value = false
 }
 onMounted(load)
 watch(() => route.params.id, load)
@@ -108,13 +117,14 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
       <p class="method-note">连线表示这些技术在同一次公开响应中被观察到。本工具无法看到网站的内部请求路径或部署拓扑。</p>
     </section>
 
-    <section v-else class="tab-content ai-tab"><div class="section-title-row compact"><div><div class="eyebrow">AI 辅助解读</div><h2>技术分析</h2></div><RouterLink v-if="!aiConfigured" to="/settings" class="text-link">配置 AI ↗</RouterLink></div>
+    <section v-else class="tab-content ai-tab"><div class="section-title-row compact"><div><div class="eyebrow">AI 辅助解读</div><h2>技术分析</h2></div><RouterLink v-if="aiConfigured === false" to="/settings" class="text-link">配置 AI ↗</RouterLink></div>
       <div v-if="scan.ai_reports.length" class="ai-report-list"><article v-for="report in scan.ai_reports" :key="report.id" class="ai-report"><div class="ai-report-meta"><span>模型 / {{ report.model }}</span><time>{{ new Date(report.created_at).toLocaleString('zh-CN') }}</time></div><p>{{ report.content }}</p></article></div>
       <div class="ai-compose"><div class="ai-compose-head"><span class="ai-spark">✳</span><div><h3>基于证据生成分析</h3><p>AI 只接收本次检测摘要和匹配到的证据，不负责判断某项技术是否存在。</p></div></div>
         <details v-if="aiPreview" class="data-preview"><summary>查看即将发送的具体数据</summary><pre>{{ JSON.stringify(aiPreview, null, 2) }}</pre></details>
         <label class="authorization ai-confirm"><input v-model="confirmed" type="checkbox" /> 我已了解：这些摘要信息将发送到我配置的 AI 服务。</label>
-        <el-button type="primary" :loading="sending" :disabled="!aiConfigured || !confirmed" @click="analyze">{{ scan.ai_reports.length ? '再生成一份分析' : '生成 AI 分析' }} ↗</el-button>
-        <p v-if="!aiConfigured" class="inline-note">尚未配置 AI 服务。请先前往“设置”添加兼容接口。</p>
+        <el-button type="primary" :loading="sending" :disabled="aiConfigured !== true || !confirmed" @click="analyze">{{ scan.ai_reports.length ? '再生成一份分析' : '生成 AI 分析' }} ↗</el-button>
+        <p v-if="aiConfigured === false" class="inline-note">尚未配置 AI 服务。请先前往“设置”添加兼容接口。</p>
+        <p v-else-if="aiStatusError" class="inline-note">{{ aiStatusError }}</p>
       </div>
     </section>
     <footer class="page-footer"><span>检测记录 {{ String(scan.id).padStart(4, '0') }}</span><span>本次未观察到证据，不代表技术已被移除。</span><a :href="reportUrl(scan.id, 'json')" target="_blank" rel="noreferrer">下载 JSON ↗</a></footer>

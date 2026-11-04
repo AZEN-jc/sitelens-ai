@@ -99,3 +99,87 @@
 - 没有调用真实 AI 服务；AI 成功、失败、异常输出和密钥生命周期继续由自动化测试覆盖。
 - 没有执行鼠标/键盘浏览器自动化、视觉回归、无障碍扫描或浏览器“打印为 PDF”。页面路径 HTTP 200 只能证明 SPA 路由可访问。
 - 没有运行依赖漏洞数据库扫描，因此不声称第三方依赖不存在已知漏洞。
+
+## 2026-11-04 交接复验与验收环境陷阱
+
+本轮在 Intel macOS 的 WorkBuddy 会话中复验，只补齐一键验收入口与实测记录。后端、前端源码、vite 配置和现有测试均未改动。工作树两个未提交改动 `frontend/src/views/ScanView.vue` 与 `frontend/tests/ScanView.test.ts` 原样保留，经第 8 项验证通过。
+
+下表按证据包第 1 至 8 项列出复现实验的真实命令与输出，失败项照实保留。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 1 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；`24 passed in 4.99s`。 |
+| 2 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；`All checks passed!`。 |
+| 3 前端测试（默认环境） | `pnpm test`（在 `frontend` 目录，Node 22.22.2） | 7 errors、no tests、60.21s；`Failed to start forks worker`、`Timeout waiting for worker to respond`。失败。 |
+| 4 换 Node 版本 | Node 24.22.1 加 fallback pnpm 跑 `pnpm test` | 2 passed + 5 errors、91.09s，同为 forks worker 超时。失败。 |
+| 5 降并发 | `pnpm test --pool=threads --maxWorkers=1 --fileParallelism=false` | 仍报 `Failed to start forks worker`、60.21s。失败。 |
+| 6 换进程池 | `pnpm test --pool=vmThreads --maxWorkers=2` | 6 passed / 1 failed、25.17s；`ReportsView.test.ts` 出现 `scans.length` undefined。部分通过。 |
+| 7 fork 能力复测 | `node -e "fork(...)"` 用真实模块文件 | `FORK_OK pong`，带不带 `NODE_OPTIONS` 都成功，排除沙箱禁 fork。 |
+| 8 去除宿主注入 | `env -u NODE_OPTIONS pnpm test` | 7 files / 8 tests 全过，4.28s，退出码 0。 |
+
+根因归属宿主环境注入。宿主把 `NODE_OPTIONS` 设为 `--require=<语言服务 shim>`，vitest 4 的 forks worker 继承该变量后初始化握手阻塞，60 秒后超时。第 7 项证明 fork 本身可用。第 8 项去掉该变量后默认 forks pool 全绿，`ReportsView.test.ts` 也通过，说明第 6 项的 `scans.length` 报错属于 vmThreads 上下文假象，不是产品缺陷。第 3 至 6 项的失败都不来自项目源码。
+
+一键脚本本轮实跑 `./scripts/verify-all.sh`。脚本开头清除宿主注入的 `NODE_OPTIONS` 与 `PYTHONPATH`，四步顺序执行，`set -eu` 保证任一步失败立即停止。摘录的真实输出如下。
+
+```text
+$ ./scripts/verify-all.sh
+== 后端测试 ==
+........................                                                 [100%]
+24 passed in 3.01s
+== 后端静态检查 ==
+All checks passed!
+== 前端测试 ==
+ Test Files  7 passed (7)
+      Tests  8 passed (8)
+   Duration  4.44s (transform 2.14s, setup 0ms, import 9.10s, tests 857ms, environment 10.99s)
+== 前端生产构建 ==
+✓ 2250 modules transformed.
+dist/assets/charts-_pqqLW_Q.js             540.47 kB │ gzip: 189.29 kB
+✓ built in 12.21s
+全部检查通过。
+```
+
+脚本整体退出码 0。后端 24 passed，前端 7 个测试文件、8 项测试通过，`vue-tsc -b` 与 Vite 构建成功，转换 2250 个模块。`charts` 分块 540.47 kB（gzip 189.29 kB）仍触发 Vite 的 500 kB 提示。前端测试 stderr 出现 `Failed to resolve component: el-button` 的 Vue 警告，不影响断言结果。上述数字来自本轮脚本实跑，与表中证据包数字分属不同次运行。
+
+复跑中发现第二处宿主注入干扰。`PYTHONPATH` 指向宿主文件代理 shim，pytest 的 `tmp_path` 夹具在临时根目录已存在时会收到 `EEXIST`，表现为 4 个用例在 setup 阶段报错。裸跑 `./.venv/bin/pytest -q` 复现为 `20 passed, 4 errors`；`env -u PYTHONPATH ./.venv/bin/pytest -q` 与 `pytest -q --basetemp=<独立目录>` 均回到 `24 passed`。脚本选择清除注入变量，不改动项目测试配置。
+
+### 本机服务端到端冒烟
+
+用 `env -u PYTHONPATH -u NODE_OPTIONS ./scripts/start-local.sh` 启动服务。全部请求显式禁用代理，没有对外部网站发起扫描。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 健康检查 | `GET /api/health` | 200 `{"status":"ok"}`。 |
+| 页面与深链 | `GET /`、`/settings`、`/scans/1`、`/scans/999999` | 均 200，657 bytes。 |
+| 静态产物一致性 | 比较运行中 `/` 与 `frontend/dist/index.html` | 字节完全一致。 |
+| 历史与证据 | `/api/scans/count`、`/api/scans/1`、`/api/scans?limit=1&offset=0`、`/api/scans/1/evidence` | 均 200，总数为 1。 |
+| 不存在记录 | `GET /api/scans/999999` | 404 `未找到这条检测记录。`。 |
+| 报告导出 | `format=html` 与 `format=json` | 200，HTML 854 bytes，JSON 3081 bytes。 |
+| 授权门禁 | `POST /api/scans` 且 `authorized=false` | 400 `请先确认你拥有该网站，或已获准分析其公开技术特征。`。 |
+| 私网拦截 | `POST /api/scans` 目标为本机地址且 `authorized=true` | 400 `禁止检测解析到私网、本机或保留地址的目标。`，未发起请求。 |
+| AI 配置状态 | `GET /api/ai/config` | 200 `{"configured":false,"base_url":null,"model":null}`，未回传密钥。 |
+
+### 本轮未执行
+
+- 没有对真实外部网站发起扫描。
+- 没有调用真实 AI 服务。
+- 没有执行浏览器自动化、视觉回归、无障碍扫描或打印 PDF。
+- 没有运行依赖漏洞数据库扫描，因此不声称第三方依赖不存在已知漏洞。
+
+## 2026-11-05 首页图表预加载修复
+
+复核 `frontend/dist/index.html` 时发现首页带 `modulepreload` 指向 540.47 kB 的图表分块，与 `docs/AUDIT_REPORT.md` 第 9 条"按结果页需要加载"的判断不符。该条已改写，本节记录修复与实测。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 修复前基线 | 读取 `frontend/dist/index.html` 与 chunk 清单 | 首页 `modulepreload` 指向 `charts-_pqqLW_Q.js` 528K（gzip 189.29 kB），入口 195K（gzip 71.30 kB），首屏 gzip 合计 260.59 kB。 |
+| 引用链测绘 | 检索各页面 chunk 的 import 目标 | `DashboardView`、`ReportsView`、`SettingsView`、`CompareView`、`useScanHistory` 全部反向 import charts 分块，说明共享依赖被吸入。 |
+| 根因 | 读 `frontend/vite.config.ts` 的 `manualChunks` 与 `frontend/src/views/ScanView.vue:10-11` | 图表组件本已是 `defineAsyncComponent` 懒加载，强制分块让 Vue 运行时落入 charts，破坏了按需加载。 |
+| 最小 diff | 删除 `manualChunks` 整段，仅改 1 个文件 | `pnpm build` 退出码 0，2250 模块转换成功。 |
+| 修复后首页 | 读取新 `dist/index.html` | `modulepreload` 数量为 0，只有入口 `index-BtIZbM6D.js` 281.03 kB（gzip 102.86 kB）。 |
+| 首屏体积 | 对比前后 gzip 合计 | 260.59 kB 降到 102.86 kB，减少约 60.5%。 |
+| 分块归属 | 读取新 chunk 清单 | echarts 落到 `TechnologyChart-DWkLxSGD.js` 458.82 kB（gzip 157.39 kB），@vue-flow 落到 `ArchitectureGraph-C2UOQ4-C.js` 163.64 kB，均为懒加载。最大分块低于 500 kB，Vite 体积提示消失。 |
+| 全量验收 | `./scripts/verify-all.sh` | 退出码 0，后端 24 passed、Ruff 通过、前端 7 files / 8 tests、构建成功。 |
+| 运行复验 | 启动本机服务后请求 `/` 与两个懒加载分块 | 首页字节与 `dist/index.html` 一致，两个分块均 200，核心 API 与 HTML 报告均 200。 |
+
+修复只删除构建配置中的手动分块规则，没有改动任何业务组件、接口或数据结构。没有执行真实浏览器的图表渲染与交互验收，因此不声称图表在浏览器中的视觉表现已复验。

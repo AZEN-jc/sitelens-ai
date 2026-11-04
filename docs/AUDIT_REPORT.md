@@ -62,9 +62,15 @@ API、架构、答辩速查、技术选型和第三方声明原先大段为英�
 
 ## Nice to have
 
-### 9. 图表分块仍超过 Vite 500 kB 提示线 — 未阻塞
+### 9. 图表分块仍超过 Vite 500 kB 提示线（2026-11-05 复核为已修复）
 
-生产构建成功，但 `charts` 分块约 540.47 kB（gzip 约 189 kB），仍触发 Vite 体积提示。图表已经独立分块并按结果页需要加载。当前是本机单用户毕业设计，未观察到因此导致的功能故障；后续可基于真实首屏性能再决定是否进一步拆分或替换依赖。
+原记录称图表"已经独立分块并按结果页需要加载"，该判断有误。复核生产产物 `frontend/dist/index.html` 发现首页带 `modulepreload` 指向 540.47 kB（gzip 189.29 kB）的图表分块，首屏就会预取，而首页 `DashboardView` 并不使用 echarts。它不是无害的体积提示，是真实的首屏缺陷。
+
+根因在 `frontend/vite.config.ts` 的 `manualChunks`。它把 echarts、zrender 与 vue-echarts 强制归到 `charts` 分块，Rollup 随后把 Vue 运行时等共享依赖也吸进同一分块，导致 `DashboardView`、`ReportsView`、`SettingsView`、`CompareView`、`useScanHistory` 全部反向依赖它。`TechnologyChart` 本身已是 `defineAsyncComponent` 懒加载，手动分块反而破坏了按需加载。
+
+修复只有一处，删除 `manualChunks` 整段，交由 Rollup 按动态 import 自然切分。修复后首页 `modulepreload` 数量为 0，首屏 gzip 从 260.59 kB 降到 102.86 kB，约减少 60.5%。echarts 落在 `TechnologyChart` 懒加载分块 458.82 kB（gzip 157.39 kB），@vue-flow 落在 `ArchitectureGraph` 懒加载分块 163.64 kB。最大分块低于 500 kB，Vite 体积提示消失。
+
+验证：`./scripts/verify-all.sh` 退出码 0，后端 24 passed、前端 7 files / 8 tests、构建 2250 模块。运行中服务首页与 `dist/index.html` 字节一致，两个懒加载分块均可按 200 取回，核心 API 与报告导出正常。本轮没有做真实浏览器的图表渲染交互验收。
 
 ## 安全与数据路径审查结论
 

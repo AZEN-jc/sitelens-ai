@@ -1,5 +1,6 @@
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ElMessage } from 'element-plus'
 import ScanView from '../src/views/ScanView.vue'
 import { api } from '../src/api'
 
@@ -21,6 +22,47 @@ vi.mock('element-plus', () => ({
 }))
 
 describe('ScanView', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('keeps scan results visible when the optional AI status request fails', async () => {
+    vi.mocked(api.scan).mockResolvedValue({
+      id: 42,
+      url: 'https://example.test',
+      final_url: 'https://example.test',
+      status_code: 200,
+      content_type: 'text/html',
+      title: '演示站点',
+      headers: {},
+      created_at: '2026-11-04T00:00:00Z',
+      technologies: [],
+      ai_report_count: 0,
+      ai_reports: [],
+      scripts: [],
+      styles: [],
+      meta: [],
+    })
+    vi.mocked(api.aiStatus).mockRejectedValue(new Error('连接失败'))
+
+    const wrapper = mount(ScanView, {
+      global: {
+        stubs: {
+          RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
+        },
+      },
+    })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('演示站点')
+    expect(wrapper.text()).not.toContain('无法显示这条检测记录')
+    await wrapper.findAll('button').find(button => button.text().includes('AI 分析'))?.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('暂时无法读取 AI 配置状态')
+    expect(wrapper.text()).not.toContain('尚未配置 AI 服务')
+    expect(wrapper.find('a[href="/settings"]').exists()).toBe(false)
+    expect(ElMessage.error).not.toHaveBeenCalled()
+  })
+
   it('shows a Chinese error state when the scan record cannot be loaded', async () => {
     vi.mocked(api.scan).mockRejectedValue(new Error('未找到这条检测记录。'))
 

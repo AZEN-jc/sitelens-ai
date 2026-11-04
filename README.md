@@ -70,8 +70,18 @@ pnpm dev
 
 ## 检查
 
+在项目根运行一键脚本，依次执行后端测试、Ruff、前端测试与前端构建，任一步失败立即停止：
+
+```sh
+./scripts/verify-all.sh
+```
+
+也可以分步手动执行：
+
 ```sh
 .venv/bin/pytest
 .venv/bin/ruff check backend tests
 cd frontend && pnpm test && pnpm build
 ```
+
+部分 IDE 会向终端注入 `NODE_OPTIONS` 与 `PYTHONPATH`。前者通过 `--require` 把语言服务 shim 挂到每个 Node 进程，vitest 的 forks worker 继承后初始化握手会卡住，60 秒后超时，表现为前端测试全部报错。后者指向宿主文件代理，pytest 的临时目录在已存在时会报 `EEXIST`。`verify-all.sh` 在开头清除这两个变量，让测试回到干净的进程环境。手动分步执行时若遇到前端超时，可改用 `env -u NODE_OPTIONS pnpm test`；后端临时目录报错可改用 `env -u PYTHONPATH ./.venv/bin/pytest -q`。这些属于宿主环境干扰，不是项目源码问题，不要为此修改 vite 配置或测试。
