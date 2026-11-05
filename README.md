@@ -18,16 +18,15 @@
 
 ## 本机运行
 
+首次安装依赖，之后每次启动只需一条命令：
+
 ```sh
 uv sync --all-extras
-cd frontend
-pnpm install --frozen-lockfile
-pnpm build
-cd ..
-./scripts/start-local.sh
+cd frontend && pnpm install --frozen-lockfile && cd ..
+./scripts/start.sh
 ```
 
-打开 [http://127.0.0.1:8000](http://127.0.0.1:8000)。服务只绑定本机回环地址。SQLite 检测历史保存在 `data/sitelens.sqlite`。
+`start.sh` 会自动构建前端、写入两条离线演示检测、启动服务并打开浏览器。打开 [http://127.0.0.1:8000](http://127.0.0.1:8000) 就能看到技术图表、匹配证据、历史比较和报告导出，不需要访问外部网站。服务只绑定本机回环地址，历史保存在 `data/sitelens.sqlite`。
 
 如果没有安装 uv，可使用 `.venv/bin/pip install -e '.[dev]'` 安装后端依赖；`uv.lock` 记录 Python 依赖版本。
 
