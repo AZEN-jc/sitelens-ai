@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>SiteLens AI — 网站技术特征识别与分析</title>
+<style>
+:root {
+  --page: #fafafc;
+  --rule: #e2e3ea;
+  --ink: #16181f;
+  --muted: #6b6f7b;
+  --accent: #5b3fd6;
+}
+[data-theme="dark"] {
+  --page: #0d0e13;
+  --rule: #24262f;
+  --ink: #ecedf3;
+  --muted: #8b8f9c;
+  --accent: #9a86ff;
+}
+* { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 48px; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 26px 0; }
+.brand { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; letter-spacing: .02em; }
+.toggle {
+  border: 0; background: none; color: var(--muted); cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; padding: 8px;
+}
+.toggle:hover { color: var(--ink); }
+.hero { padding: 92px 0 76px; }
+h1 {
+  margin: 0 0 30px;
+  font-size: clamp(38px, 5.6vw, 66px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+.lede { margin: 0; max-width: 46em; color: var(--muted); font-size: 14px; }
+.lede + .lede { margin-top: 6px; }
+.list { border-top: 1px solid var(--rule); }
+.row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 260px;
+  align-items: baseline;
+  gap: 24px;
+  padding: 26px 0;
+  border-bottom: 1px solid var(--rule);
+  text-decoration: none;
+  color: inherit;
+}
+.num { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--muted); }
+.name { font-size: clamp(21px, 2.5vw, 31px); font-weight: 500; letter-spacing: -.01em; }
+.note { font-size: 13px; color: var(--muted); text-align: right; }
+.row:hover .name { color: var(--accent); }
+footer { display: flex; flex-wrap: wrap; gap: 22px; padding: 44px 0 72px; color: var(--muted); font-size: 12px; }
+footer a { color: var(--muted); text-decoration: none; border-bottom: 1px solid transparent; }
+footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+@media (max-width: 720px) {
+  .wrap { padding: 0 24px; }
+  .hero { padding: 60px 0 52px; }
+  .row { grid-template-columns: 36px 1fr; gap: 12px; }
+  .note { grid-column: 2; text-align: left; margin-top: 6px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="brand">sitelens / ai</span>
+    <button class="toggle" id="theme" type="button" aria-label="切换主题">☾</button>
+  </header>
+
+  <section class="hero">
+    <h1>网站技术特征<br>识别与分析。</h1>
+    <p class="lede">用普通公开 HTTP 请求采集信号，按 JSON 指纹规则识别技术，每项结果都附上命中的响应证据。</p>
+    <p class="lede">本机单用户运行，不依赖云端，不需要账号。打开就有两条离线演示检测，可直接查看图表、证据与报告。</p>
+  </section>
+
+  <div class="list">
+    <div class="row">
+      <span class="num">01</span>
+      <span class="name">快速开始</span>
+      <span class="note">./scripts/start.sh　一条命令</span>
+    </div>
+    <div class="row">
+      <span class="num">02</span>
+      <span class="name">识别与证据</span>
+      <span class="note">19 条规则 · 证据可追溯</span>
+    </div>
+    <div class="row">
+      <span class="num">03</span>
+      <span class="name">历史与报告</span>
+      <span class="note">SQLite 比较 · HTML / JSON 导出</span>
+    </div>
+    <div class="row">
+      <span class="num">04</span>
+      <span class="name">安全边界</span>
+      <span class="note">只做公开 GET · 拒绝私网</span>
+    </div>
+  </div>
+
+  <footer>
+    <span>毕业设计 · 本机演示</span>
+    <a href="../README.md">README</a>
+    <a href="LEARNING_GUIDE.md">学习手册</a>
+    <a href="DEFENSE_SCRIPT.md">答辩稿</a>
+    <a href="TEST_REPORT.md">验收记录</a>
+  </footer>
+</div>
+<script>
+const root = document.documentElement
+const button = document.getElementById('theme')
+const stored = localStorage.getItem('sitelens-theme')
+const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+let theme = stored === 'dark' || stored === 'light' ? stored : system
+function apply() {
+  root.dataset.theme = theme
+  button.textContent = theme === 'dark' ? '☾' : '☀'
+  button.setAttribute('aria-label', theme === 'dark' ? '切换到浅色' : '切换到深色')
+}
+apply()
+button.addEventListener('click', () => {
+  theme = theme === 'dark' ? 'light' : 'dark'
+  localStorage.setItem('sitelens-theme', theme)
+  apply()
+})
+</script>
+</body>
+</html>

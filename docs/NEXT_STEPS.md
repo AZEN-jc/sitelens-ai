@@ -28,7 +28,7 @@
 - 验证命令是删掉 `frontend/dist` 后运行 `./scripts/start.sh`。
 - 首页返回 200，浏览器被唤起。
 
-## U3 交付面减法
+## U3 交付面减法（已完成）
 
 README 顶部换成 30 秒快速开始，环境排障与验证材料清单移到 docs。`.agents/` 加入 `.gitignore`。`TEST_REPORT.md` 保留为验收证据，不再从 README 正文反复链接。
 
@@ -51,7 +51,8 @@ README 顶部换成 30 秒快速开始，环境排障与验证材料清单移到
 - 两种格式的报告导出共 4 次全部 200，历史比较正确返回新增项与未观察项。
 - Chrome 156 用真实数据渲染出 canvas 309×183、2 张技术卡片、架构图 3 节点，图表分块仍是懒加载。
 - `./scripts/verify-all.sh` 与 `pstack verify all` 全绿。
-
-## 顺序
-
-U1 与 U2 已完成并有实测。U3 是最后的收口，等前两步稳定后再动，不急着改。
+- U3 把 README 从 87 行压到 46 行，首屏只剩定位、运行、能力、边界、检查与一行文档链接。环境排障长段移出，完整记录仍在 `TEST_REPORT.md`。
+- 新增 `docs/index.html` 项目说明页，参考 mkdir.directory 的极简语言。深色大留白、等宽编号、1px 细线、零卡片，明暗主题可切换，纯静态零依赖。
+- Chrome 156 实测主题切换从 dark 到 light 正常，编号列表 4 行完整，没有重叠或截断。
+- `.agents/` 加入 `.gitignore` 并从版本库移除 4 个过程文件，本地与 git 历史都保留。
+- 三个单元全部完成。`./scripts/verify-all.sh` 与 `pstack verify all` 仍全绿。
