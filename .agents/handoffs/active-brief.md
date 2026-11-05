@@ -1,46 +1,43 @@
 ---
-task_id: "sitelens-handoff-01"
-role: "implementer"
+task_id: "sitelens-acceptance-02"
+role: "verifier"
 target_agent: "codex"
-playbook: ".agents/pstack/playbooks/bug-fix.md"
+playbook: ".agents/pstack/playbooks/figure-it-out.md"
 required_principles:
   - ".agents/pstack/principles/prove-it-works.md"
-  - ".agents/pstack/principles/no-comments.md"
-  - ".agents/pstack/principles/unslop-zh-en.md"
-verify_cmd: "./scripts/verify-all.sh && pstack verify all"
+  - ".agents/pstack/principles/attack-the-premise.md"
+verify_cmd: "pstack verify all"
 ---
 
 ## 1. User Goal (Restated)
 
-把毕业设计 SiteLens AI 交接成任何机器上都能一键复现验收的状态。本轮不新增产品功能，不修改后端业务代码，只补齐可复现的验收入口与真实记录。用户明确要求先规划再执行，主控已完成复现与根因剥离。
+补齐毕业设计此前明确列为未执行的四项验收：真实浏览器图表渲染交互、真实 AI 服务、外部网站扫描、依赖漏洞数据库扫描。产出可复验命令、真实命令输出与边界说明，供答辩使用。
 
 ## 2. Consolidated Directives (History & Delta)
 
-- [Init] 已在项目根初始化 pstack 轻量工作区，项目自带 `AGENTS.md` 未被覆盖。
-- [Round 1 已否决] 不要修改 `frontend/vite.config.ts` 的 pool 配置。实测证明默认 forks pool 在干净环境下 4.28s 全绿，改配置是修症状。
-- [Round 1 已否决] 不要给 `ReportsView.vue` 或 `ReportsView.test.ts` 打补丁。该报错只在 vmThreads 下出现，是测试运行器上下文假象。
-- [Delta] 保留工作树现有的 `ScanView.vue` 与 `ScanView.test.ts` 改动，不要 reset、不要 commit、不要改内容。
-- [Delta] 只交付三处文件改动：新增一键验收脚本、README 检查段、验收记录追加本轮实测。文档数字必须来自本轮真实运行，禁止沿用旧数字或写"应该通过"。
-- [Delta] 中文文档禁用破折号、AI 腔套话和空泛结论；脚本注释不得复述代码行为。
+- [Step 1] 立三条互斥假说并按实测剪枝。H1 四项都能自动补齐已证伪，H2 四项都做不到已证伪，采用 H3 分项判定。
+- [Step 2 skip] 原生子 Agent 在上一轮两次实测 502 TLS 握手失败，修复 Clash GLOBAL 后仍失败。本轮改由主控用并行只读命令取证，全部证据写入证据包，不把 502 重试当进展。
+- [Step 3] 不得为跑通验收放宽 `AGENTS.md` 的任何安全约束。扫描器禁用环境代理、AI 密钥只存内存、不持久化页面 HTML 三条保持原样。
+- [Step 3] 外部扫描只对用户授权本轮演示的 IANA 保留示例域名发起普通 GET，不碰其他公网目标，不做漏洞探测。
+- [Step 3] 真实模型提供方本机不存在，不得用测试替身冒充真实 AI。替身只用于验证配置、连接、密钥与确认门禁边界，文档中显式标注。
+- [Step 4] 浏览器验收用 CDP Fetch 拦截返回受控 fixture，不写数据库、不改业务源码；脚本固化到项目供随时复跑。
+- [Step 5] 所有结论按证据分级入账，交付前跑全量门禁。
 
 ## 3. Evidence Pointers (Read-Only Context)
 
-- 复现与根因全表：`.agents/handoffs/evidence-pack.md:1-60`
-- 产品定义与运行要求：`README.md:1-8`
-- 项目安全与工程约束：`AGENTS.md:1-8`
-- 上轮审查结论：`docs/AUDIT_REPORT.md:1-88`
-- 上轮验收声明与文档体例：`docs/TEST_REPORT.md:1-101`
-- 现有启动脚本体例：`scripts/start-local.sh:1-12`
-- 前端测试配置：`frontend/vite.config.ts:1-20`
-- 已验证通过的遗留改动：`frontend/src/views/ScanView.vue:16-40`
-- 已验证通过的遗留测试：`frontend/tests/ScanView.test.ts:22-62`
-- 剧本与铁律：`.agents/pstack/playbooks/bug-fix.md:1-30`、`.agents/pstack/principles/prove-it-works.md:1-40`
+- 安全边界：`AGENTS.md:1-10`
+- AI 请求实现与禁用代理点：`backend/app/ai_service.py:26-48`
+- 图表容器与架构图模板：`frontend/src/views/ScanView.vue:88-120`
+- 既有验收记录体例：`docs/TEST_REPORT.md:1-10`
+- 固化的浏览器验收脚本：`scripts/verify-browser.cjs:1-30`
+- 本轮取证全表：`.agents/handoffs/evidence-pack.md:1-30`
+- 剧本与铁律：`.agents/pstack/playbooks/figure-it-out.md:1-20`、`.agents/pstack/principles/prove-it-works.md:1-20`
 - 决策账本：`.agents/decision.tsv:1-1`
 
 ## 4. Deliverable Contract
 
-1. 新增 `scripts/verify-all.sh`（可执行）：在项目根依次运行后端 pytest、Ruff、前端 test、前端 build；脚本内对测试命令清除继承的 `NODE_OPTIONS`，其余保持不变；缺依赖时给中文提示并非零退出；任一步失败立即停止。用真实命令跑通，报告实际退出码。
-2. 更新 `README.md` 的「检查」段：给出一键脚本用法，并用一小段说明部分 IDE 会注入 `NODE_OPTIONS` 导致 vitest worker 超时的现象与规避方式。
-3. 在 `docs/TEST_REPORT.md` 末尾追加一节 2026-11-04 记录：按证据包第 1 至 8 项列出真实命令与输出，写清根因归属宿主注入、项目源码未改、遗留改动已验证通过，并列出本轮未执行项。
-4. 交付前自行运行 `./scripts/verify-all.sh`，贴出真实输出；主控会独立复跑并加跑端到端服务冒烟与 pstack 全量门禁。
-5. 禁止修改任何后端文件、前端源码、vite 配置与现有测试；禁止 git commit、push 或任何网络发布动作。
+1. 四项各自给出真实命令、真实输出与明确判定，完成或阻塞都要写清，禁止把测试替身写成真实模型推理。
+2. 新增可复验脚本并在验收记录里给出一键复跑命令与最小心智模型。
+3. 依赖漏洞结果如实记录数量与公告 ID，不擅自升级依赖，不声称依赖零漏洞。
+4. 更新证据包、交付摘要与决策账本，交付前 `pstack verify all` 必须全绿。
+5. 不改后端业务代码、前端组件与接口，不 git push 到未授权的远端。

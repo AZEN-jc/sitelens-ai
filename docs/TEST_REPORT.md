@@ -182,4 +182,88 @@ dist/assets/charts-_pqqLW_Q.js             540.47 kB │ gzip: 189.29 kB
 | 全量验收 | `./scripts/verify-all.sh` | 退出码 0，后端 24 passed、Ruff 通过、前端 7 files / 8 tests、构建成功。 |
 | 运行复验 | 启动本机服务后请求 `/` 与两个懒加载分块 | 首页字节与 `dist/index.html` 一致，两个分块均 200，核心 API 与 HTML 报告均 200。 |
 
-修复只删除构建配置中的手动分块规则，没有改动任何业务组件、接口或数据结构。没有执行真实浏览器的图表渲染与交互验收，因此不声称图表在浏览器中的视觉表现已复验。
+修复只删除构建配置中的手动分块规则，没有改动任何业务组件、接口或数据结构。浏览器图表验收已在下一节补齐。
+
+## 2026-11-05 晚 四项未验收项补齐
+
+按 pstack 的 figure-it-out 剧本执行。先证伪"四项都能自动补齐"与"四项都做不到"两个极端假说，再分项取证。全程没有放宽 `AGENTS.md` 的安全约束。
+
+### 1 真实浏览器图表渲染交互验收（已完成）
+
+本机 Chrome 156.0.8078.81 以 `--headless=new` 启动 CDP 端口 9223。用 CDP `Fetch.fulfillRequest` 拦截 `/api/scans/1` 返回受控 fixture（3 项技术、3 类证据），没有写数据库，没有改业务源码。脚本固化在 `scripts/verify-browser.cjs`。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 页面渲染 | CDP `Page.navigate` 到 `/scans/1` | 标题、受控样本 h1、4 个分区按钮（概览/证据/架构推测/AI 分析）、3 张技术卡片全部出现。 |
+| 图表画布 | 等待异步组件后读取 `.side-panel canvas` | canvas 数量 1，尺寸 309×183，`toDataURL()` 长度 12610，证明 echarts 真实绘制了像素，不是空容器。 |
+| 首次加载时机 | 页面就绪后立刻读取 | canvas 数量 0，`TechnologyChart-DWkLxSGD.js` 已请求。图表是异步组件，需等待渲染，首轮检查的 0 不是缺陷。 |
+| 交互切换 | 点击"架构推测"按钮并等待 | `.vue-flow__node` 4 个、SVG 9 个、方法说明可见。 |
+| 懒加载实证 | `performance.getEntriesByType('resource')` | 概览只加载 `TechnologyChart` 分块，切到架构后才出现 `ArchitectureGraph` 的 JS 与 CSS 分块。 |
+| 视觉留证 | `Page.captureScreenshot` | 生成 88 KB PNG 截图。 |
+
+最小心智模型：
+
+```text
+Chrome 156 headless (CDP :9223)
+  | Page.navigate /scans/1
+  v
+SiteLens SPA -- GET /api/scans/1 --> CDP Fetch 拦截
+  |                                    |
+  | <-- 受控 fixture (3 项技术) --------+
+  v
+defineAsyncComponent
+  +-- TechnologyChart 懒加载 --> canvas 309x183
+  +-- ArchitectureGraph 懒加载 --> 4 node / 9 svg
+```
+
+一键复跑（三个进程，先起服务与浏览器，再跑脚本）：
+
+```sh
+env -u PYTHONPATH -u NODE_OPTIONS ./scripts/start-local.sh &
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --no-sandbox --remote-debugging-port=9223 --user-data-dir=/tmp/sitelens-chrome about:blank &
+env -u NODE_OPTIONS -u PYTHONPATH node ./scripts/verify-browser.cjs
+```
+
+### 2 依赖漏洞数据库扫描（已完成，问题如实保留）
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 前端 | `pnpm audit --json`（走 7890 代理） | 退出码 1，2 个 moderate：`glob` 的 AbortSignal 取消绕过、`minimatch` 的 globparts 放大 DoS。 |
+| Python 工具链 | `uvx --from pip-audit pip-audit -r ...` | 两次失败。第一次撞宿主 `sitecustomize` 的 `Path.mkdir` EEXIST，第二次 `ensurepip` SIGABRT。工具本身跑不起来，换直连 OSV API。 |
+| Python 依赖 | 对 `uv pip freeze` 导出的 35 个包批量 POST `https://api.osv.dev/v1/querybatch` | 2 个包命中公告：`pip 25.2`（GHSA-4xh5-x5gv-qwph 等）、`pytest 8.4.2`（GHSA-6w46-j5rx-g56g、PYSEC-2026-1845）。两者都是开发期工具，不在运行时业务依赖里。 |
+
+没有升级任何依赖，也没有把警告改掉。结论只能写成"已完成数据库比对并发现 4 处公告"，不能写成"依赖无漏洞"。
+
+### 3 外部网站扫描（已实测，链路被安全约束阻断）
+
+用户授权本轮演示，目标取 IANA 保留的示例域名 `example.com`，只发普通 GET，不做任何漏洞探测。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 扫描器链路 | `POST /api/scans` 带 `authorized=true`，连续 3 次 | 每次均 `504 {"detail":"网站请求超时。"}`，耗时 10.00 秒，稳定复现。 |
+| 直连对照 | `curl --noproxy '*' https://example.com` | 200，耗时 6.73 秒。 |
+| 代理对照 | `curl -x http://127.0.0.1:7890 https://example.com` | 200，耗时 0.35 秒。 |
+| 失败边界 | `GET /api/scans/count` | 始终为 1，超时请求没有落库，没有污染历史。 |
+
+根因是 `backend/app/fetcher.py:111` 的 `trust_env=False` 加上 `backend/app/fetcher.py:100` 的 10 秒超时。本机直连慢、代理快，但 `AGENTS.md:4` 明确禁止扫描路径启用环境代理，这是防 SSRF 的硬边界。本轮不为跑通验收而放宽它。结论：外部扫描链路当前不可完成，需要一台能直连公网且延迟低于 10 秒的机器，或由部署方在隔离网络内自行评估。
+
+### 4 真实 AI 服务（边界已验，真实模型推理未完成）
+
+本机没有 Ollama、没有运行中的 OpenAI 兼容端点（11434、8787 等端口均无响应），`~/.codex/config.toml` 里的 kimi 端点 8787 未启动。公网 provider 同样被 `trust_env=False` 挡住。因此用本机 `127.0.0.1:8788` 的 OpenAI 兼容测试替身验证链路边界，**不把它称为真实 AI 推理**。
+
+| 检查 | 实际命令/操作 | 本轮结果 |
+| --- | --- | --- |
+| 配置 | `POST /api/ai/config` 写入 base_url、密钥、模型 | 200，返回 `configured:true`，不回显密钥。 |
+| 连接 | `POST /api/ai/test` | 200 `{"ok":true}`，后端真实发出一次 HTTP 请求到本机替身。 |
+| 密钥边界 | `GET /api/ai/config` | 只返回 `configured`、`base_url`、`model`，密钥未出现。 |
+| 确认门禁 | `POST /api/ai/analyze` 且 `confirm_data_sent=false` | 400 `请先确认页面展示的分析数据，再发送到 AI 服务。` |
+| 清除 | `DELETE /api/ai/config` | 204，随后状态复位为 `configured:false`。 |
+
+没有调用 `analyze` 的成功路径，避免把测试替身生成的假报告写进演示数据。真实模型推理仍需提供一个本机可达的 OpenAI 兼容端点（例如启动 Ollama 并用 `http://127.0.0.1:11434/v1`），或由部署方自行接入。AI 成功、失败、异常输出与密钥生命周期的自动化覆盖仍由现有后端测试承担。
+
+### 本轮仍未执行
+
+- 真实 LLM 推理与真实 AI 报告落库，原因是本机没有可用模型端点。
+- 对公网目标的完整成功扫描，原因是扫描器禁用代理且 10 秒超时。
+- 浏览器视觉回归、无障碍扫描、打印 PDF，以及鼠标 hover 触发的 echarts tooltip 细节。
+- 依据漏洞公告升级依赖或做修复验证，本轮只做比对与记录。

@@ -55,4 +55,38 @@
 - 最小 diff：删除 `manualChunks` 整段，仅改 `frontend/vite.config.ts` 一个文件。
 - 修复后 `dist/index.html` 的 `modulepreload` 数量为 0，首屏 gzip 260.59 kB 降到 102.86 kB（约减 60.5%）；最大 chunk 458.82 kB 低于 500 kB，Vite 警告消失。echarts 与 @vue-flow 分别落在两个懒加载分块 `[实测 Measured]`。
 - `./scripts/verify-all.sh` 退出码 0；本机服务首页与 `dist/index.html` 字节一致，两个懒加载分块均返回 200，核心 API 与报告导出正常 `[实测 Measured]`。
-- 未做真实浏览器图表渲染交互验收，不声称视觉表现已复验。
+- 未做真实浏览器图表渲染交互验收，不声称视觉表现已复验。此条已被 2026-11-05 晚的浏览器验收补齐。
+
+## 2026-11-05 晚 四项未验收项取证（figure-it-out 剧本）
+
+### 假说剪枝
+
+- H1 四项都能自动补齐：证伪。无 playwright CLI、无 AI 环境变量、无授权公网目标、`backend/app/fetcher.py:111` 禁用代理 `[实测 Measured]`。
+- H2 四项都做不到：证伪。本机有 Chrome 156、`registry.npmjs.org` 与 `pypi.org` 走 7890 均 200、Node 22 内置 WebSocket 可用 `[实测 Measured]`。
+- H3 分项判定：采用。浏览器与漏洞库可自主完成，AI 与外扫受边界与网络约束。
+
+### 浏览器（已完成）
+
+- Chrome 156.0.8078.81 `--headless=new` + CDP 端口 9223 就绪。项目内无 playwright，改用 Node 内置 WebSocket 直连 CDP，零新增依赖 `[实测 Measured]`。
+- CDP Fetch 拦截 `/api/scans/1` 返回受控 fixture（3 项技术），不写数据库。页面标题、4 个 tab、3 张技术卡片正常 `[实测 Measured]`。
+- 首轮页面就绪即检查时 canvas 为 0，等待异步组件后为 1，尺寸 309×183，`toDataURL()` 长度 12610，证明 echarts 真实绘制 `[实测 Measured]`。
+- 点击"架构推测"后 `.vue-flow__node` 4 个、SVG 9 个；`TechnologyChart` 分块仅在概览加载，`ArchitectureGraph` 的 JS/CSS 在切换后才请求，懒加载行为在真实浏览器里成立 `[实测 Measured]`。
+- 脚本固化到 `scripts/verify-browser.cjs:1-30`，截图 88 KB。
+
+### 依赖漏洞（已完成）
+
+- `pnpm audit --json` 退出码 1，2 个 moderate：`glob` AbortSignal 取消绕过、`minimatch` globparts 放大 DoS `[实测 Measured]`。
+- `uvx --from pip-audit pip-audit` 两次失败：宿主 `sitecustomize` 的 `Path.mkdir` EEXIST，以及 `ensurepip` SIGABRT。改用 OSV API 直连 `[实测 Measured]`。
+- OSV `querybatch` 查 35 个 Python 包，命中 `pip 25.2`（GHSA-4xh5-x5gv-qwph 等）与 `pytest 8.4.2`（GHSA-6w46-j5rx-g56g、PYSEC-2026-1845），均为开发期工具 `[实测 Measured]`。
+
+### 外部扫描（实测阻断）
+
+- `POST /api/scans` 到 IANA 示例域名 `example.com` 带 `authorized=true`，连续 3 次均 504 `网站请求超时。`，每次 10.00s `[实测 Measured]`。
+- 同机直连 curl 200 / 6.73s，走 7890 代理 200 / 0.35s；`GET /api/scans/count` 始终为 1，失败未落库 `[实测 Measured]`。
+- 根因：`backend/app/fetcher.py:111` 的 `trust_env=False` 与 `backend/app/fetcher.py:100` 的 10 秒超时，叠加本机直连慢。`AGENTS.md:4` 禁止扫描路径启用环境代理，本轮未放宽 `[推导 Inferred]`。
+
+### 真实 AI（边界已验，推理未完成）
+
+- 本机无 Ollama、11434/8787 等端口无响应，`~/.codex/config.toml` 的 kimi 端点未启动；公网 provider 同样被 `trust_env=False` 挡住 `[实测 Measured]`。
+- 用 `127.0.0.1:8788` 的 OpenAI 兼容测试替身验链路：配置 200、连接测试 `{"ok":true}`、状态不回传密钥、`confirm_data_sent=false` 返回 400、清除 204 后状态复位 `[实测 Measured]`。
+- 该替身不是真实 LLM，没有调用 analyze 成功路径，避免假报告写入演示数据。真实模型推理仍缺一个本机可达端点 `[实测 Measured]`。
