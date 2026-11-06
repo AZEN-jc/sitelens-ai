@@ -13,7 +13,6 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from app.ai_service import generate_ai_analysis, test_ai_connection, validate_ai_base_url
-from app.compare import compare_results
 from app.database import initialize_database, make_engine
 from app.detector import detect
 from app.fetcher import fetch_page
@@ -47,6 +46,7 @@ def _technology_dict(session: Session, technology: TechnologyRow) -> dict:
     return {
         "name": technology.name,
         "category": technology.category,
+        "category_label": CATEGORY_NAMES_ZH.get(technology.category, technology.category),
         "score": technology.score,
         "confidence": technology.confidence,
         "evidence": [
@@ -182,7 +182,16 @@ def create_app(database_url: str | None = None) -> FastAPI:
             before = [_technology_dict(session, item) for item in session.exec(select(TechnologyRow).where(TechnologyRow.scan_id == first.id)).all()]
             after = [_technology_dict(session, item) for item in session.exec(select(TechnologyRow).where(TechnologyRow.scan_id == second.id)).all()]
             normalized = lambda rows: [{"name": item["name"], "evidence": [f"{ev['source']}:{ev['matched']}" for ev in item["evidence"]]} for item in rows]
-            return {"first_scan_id": first.id, "second_scan_id": second.id, **compare_results(normalized(before), normalized(after))}
+            prev = {item["name"]: set(item.get("evidence", [])) for item in normalized(before)}
+            curr = {item["name"]: set(item.get("evidence", [])) for item in normalized(after)}
+            common = prev.keys() & curr.keys()
+            return {
+                "first_scan_id": first.id, "second_scan_id": second.id,
+                "newly_observed": sorted(curr.keys() - prev.keys()),
+                "not_observed_now": sorted(prev.keys() - curr.keys()),
+                "evidence_changed": sorted(name for name in common if prev[name] != curr[name]),
+                "unchanged": sorted(name for name in common if prev[name] == curr[name]),
+            }
 
     @app.get("/api/ai/config", response_model=AIConfigView)
     def get_ai_config():
@@ -274,7 +283,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
             return Response(json.dumps(data, ensure_ascii=False, default=str, indent=2), media_type="application/json")
         confidence_names = {"high": "高", "medium": "中", "low": "低"}
         technologies = "".join(
-            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(CATEGORY_NAMES_ZH.get(item['category'], item['category']))} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
+            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(item['category_label'])} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
             + "".join(f"<p><b>证据来源：{html.escape(ev['source'])}</b>：{html.escape(ev['matched'])}</p>" for ev in item["evidence"])
             + "</section>" for item in data["technologies"]
         )

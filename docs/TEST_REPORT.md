@@ -190,7 +190,7 @@ dist/assets/charts-_pqqLW_Q.js             540.47 kB │ gzip: 189.29 kB
 
 ### 1 真实浏览器图表渲染交互验收（已完成）
 
-本机 Chrome 156.0.8078.81 以 `--headless=new` 启动 CDP 端口 9223。用 CDP `Fetch.fulfillRequest` 拦截 `/api/scans/1` 返回受控 fixture（3 项技术、3 类证据），没有写数据库，没有改业务源码。脚本固化在 `scripts/verify-browser.cjs`。
+本机 Chrome 156.0.8078.81 以 `--headless=new` 启动 CDP 端口 9223。用 CDP `Fetch.fulfillRequest` 拦截 `/api/scans/1` 返回受控 fixture（3 项技术、3 类证据），没有写数据库，没有改业务源码。验收方法记录在本节。
 
 | 检查 | 实际命令/操作 | 本轮结果 |
 | --- | --- | --- |
@@ -214,14 +214,6 @@ SiteLens SPA -- GET /api/scans/1 --> CDP Fetch 拦截
 defineAsyncComponent
   +-- TechnologyChart 懒加载 --> canvas 309x183
   +-- ArchitectureGraph 懒加载 --> 4 node / 9 svg
-```
-
-一键复跑（三个进程，先起服务与浏览器，再跑脚本）：
-
-```sh
-env -u PYTHONPATH -u NODE_OPTIONS ./scripts/start-local.sh &
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --no-sandbox --remote-debugging-port=9223 --user-data-dir=/tmp/sitelens-chrome about:blank &
-env -u NODE_OPTIONS -u PYTHONPATH node ./scripts/verify-browser.cjs
 ```
 
 ### 2 依赖漏洞数据库扫描（已完成，问题如实保留）

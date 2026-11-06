@@ -18,6 +18,7 @@ class EvidenceOut(BaseModel):
 class TechnologyOut(BaseModel):
     name: str
     category: str
+    category_label: str
     score: int
     confidence: str
     evidence: list[EvidenceOut]

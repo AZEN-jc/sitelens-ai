@@ -8,6 +8,7 @@ export interface Evidence {
 export interface Technology {
   name: string
   category: string
+  category_label: string
   score: number
   confidence: 'high' | 'medium' | 'low'
   evidence: Evidence[]

@@ -15,11 +15,11 @@ const FALLBACK: Scan[] = [
     headers: {}, meta: [], scripts: [], styles: [], created_at: '2026-11-05T12:00:00Z',
     ai_report_count: 0, ai_reports: [],
     technologies: [
-      { name: 'React', category: 'Frontend framework', score: 100, confidence: 'high', evidence: [
+      { name: 'React', category: 'Frontend framework', category_label: '前端框架', score: 100, confidence: 'high', evidence: [
         { source: 'html', matched: 'data-reactroot', kind: 'indirect', weight: 70 },
         { source: 'script_src', matched: '/assets/react-dom.js', kind: 'indirect', weight: 60 },
       ] },
-      { name: 'Nginx', category: 'Web server', score: 85, confidence: 'high', evidence: [
+      { name: 'Nginx', category: 'Web server', category_label: 'Web 服务器', score: 85, confidence: 'high', evidence: [
         { source: 'header:server', matched: 'nginx', kind: 'direct', weight: 85 },
       ] },
     ],
@@ -30,11 +30,11 @@ const FALLBACK: Scan[] = [
     headers: {}, meta: [], scripts: [], styles: [], created_at: '2026-11-05T11:00:00Z',
     ai_report_count: 0, ai_reports: [],
     technologies: [
-      { name: 'WordPress', category: 'CMS', score: 100, confidence: 'high', evidence: [
+      { name: 'WordPress', category: 'CMS', category_label: '内容管理系统', score: 100, confidence: 'high', evidence: [
         { source: 'meta_generator', matched: 'WordPress 6.8', kind: 'direct', weight: 90 },
         { source: 'style_href', matched: '/wp-content/themes/demo/style.css', kind: 'indirect', weight: 60 },
       ] },
-      { name: 'Apache', category: 'Web server', score: 85, confidence: 'high', evidence: [
+      { name: 'Apache', category: 'Web server', category_label: 'Web 服务器', score: 85, confidence: 'high', evidence: [
         { source: 'header:server', matched: 'Apache', kind: 'direct', weight: 85 },
       ] },
     ],

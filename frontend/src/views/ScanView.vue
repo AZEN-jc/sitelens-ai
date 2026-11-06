@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api, reportUrl } from '../api'
-import { technologyCategoryLabel } from '../labels'
 import type { Scan } from '../types'
 
 const TechnologyChart = defineAsyncComponent(() => import('../components/TechnologyChart.vue'))
@@ -47,7 +46,7 @@ watch(() => route.params.id, load)
 const categories = computed(() => {
   const counts = new Map<string, number>()
   for (const tech of scan.value?.technologies || []) {
-    const category = technologyCategoryLabel(tech.category)
+    const category = tech.category_label
     counts.set(category, (counts.get(category) || 0) + 1)
   }
   return [...counts].map(([name, value]) => ({ name, value }))
@@ -95,7 +94,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
         <div v-if="scan.technologies.length" class="technology-grid">
           <article v-for="tech in scan.technologies" :key="tech.name" class="technology-card">
             <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级</span></div>
-            <h3>{{ tech.name }}</h3><span class="tech-category">{{ technologyCategoryLabel(tech.category) }}</span><div class="score-track"><i :style="{ width: `${tech.score}%` }"></i></div>
+            <h3>{{ tech.name }}</h3><span class="tech-category">{{ tech.category_label }}</span><div class="score-track"><i :style="{ width: `${tech.score}%` }"></i></div>
             <button class="evidence-link" @click="activeTab = 'evidence'">{{ tech.evidence.length }} 条证据 <span>↗</span></button>
           </article>
         </div>
@@ -108,7 +107,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
 
     <section v-else-if="activeTab === 'evidence'" class="tab-content">
       <div class="section-title-row compact"><div><div class="eyebrow">追溯每一条匹配</div><h2>识别证据</h2></div></div>
-      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ technologyCategoryLabel(tech.category) }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
+      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category_label }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
       <div v-if="!scan.technologies.length" class="empty-state">没有匹配到证据。</div>
     </section>
 

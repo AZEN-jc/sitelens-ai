@@ -48,4 +48,4 @@ AI 密钥只留在后端内存，不写盘、不回传。服务只绑定 127.0.0
 
 ## 文档
 
-[项目说明页](docs/index.html) · [学习手册](docs/LEARNING_GUIDE.md) · [答辩稿](docs/DEFENSE_SCRIPT.md) · [架构](docs/ARCHITECTURE.md) · [API](docs/API.md) · [验收记录](docs/TEST_REPORT.md) · [下一步](docs/NEXT_STEPS.md)
+[学习手册](docs/LEARNING_GUIDE.md) · [答辩稿](docs/DEFENSE_SCRIPT.md) · [架构](docs/ARCHITECTURE.md) · [API](docs/API.md) · [验收记录](docs/TEST_REPORT.md) · [下一步](docs/NEXT_STEPS.md)

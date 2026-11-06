@@ -23,7 +23,7 @@
 
 ## U2 一键启动（已完成）
 
-把 5 步压成一条 `./scripts/start.sh`。检测依赖，缺前端产物时自动构建，起服务后打开浏览器，失败给中文提示。现有 `start-local.sh` 保留给开发使用。
+把 5 步压成一条 `./scripts/start.sh`。检测依赖，缺前端产物时自动构建，起服务后打开浏览器，失败给中文提示。
 
 - 验证命令是删掉 `frontend/dist` 后运行 `./scripts/start.sh`。
 - 首页返回 200，浏览器被唤起。
@@ -52,7 +52,6 @@ README 顶部换成 30 秒快速开始，环境排障与验证材料清单移到
 - Chrome 156 用真实数据渲染出 canvas 309×183、2 张技术卡片、架构图 3 节点，图表分块仍是懒加载。
 - `./scripts/verify-all.sh` 与 `pstack verify all` 全绿。
 - U3 把 README 从 87 行压到 46 行，首屏只剩定位、运行、能力、边界、检查与一行文档链接。环境排障长段移出，完整记录仍在 `TEST_REPORT.md`。
-- 新增 `docs/index.html` 项目说明页，参考 mkdir.directory 的极简语言。深色大留白、等宽编号、1px 细线、零卡片，明暗主题可切换，纯静态零依赖。
 - Chrome 156 实测主题切换从 dark 到 light 正常，编号列表 4 行完整，没有重叠或截断。
 - `.agents/` 加入 `.gitignore` 并从版本库移除 4 个过程文件，本地与 git 历史都保留。
 - 三个单元全部完成。`./scripts/verify-all.sh` 与 `pstack verify all` 仍全绿。

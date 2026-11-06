@@ -15,9 +15,9 @@ const nodes = computed(() => [
     id: `tech-${index}`, position: { x: 230 + (index % 2) * 230, y: Math.floor(index / 2) * 100 }, data: { label: `${tech.name} · ${{ high: '高', medium: '中', low: '低' }[tech.confidence]}置信` }, class: 'flow-node',
   })),
 ])
-const edges = computed(() => props.technologies.map((_, index) => ({ id: `edge-${index}`, source: 'response', target: `tech-${index}`, label: '观察到', animated: false, style: { stroke: '#64726c' } })))
+const edges = computed(() => props.technologies.map((_, index) => ({ id: `edge-${index}`, source: 'response', target: `tech-${index}`, label: '观察到', animated: false, style: { stroke: '#8a8a8a' } })))
 </script>
 
 <template>
-  <div class="flow-wrap"><VueFlow :nodes="nodes" :edges="edges" fit-view-on-init :nodes-draggable="false" :zoom-on-scroll="false"><Background pattern-color="#28302e" :gap="24" /><Controls /></VueFlow></div>
+  <div class="flow-wrap"><VueFlow :nodes="nodes" :edges="edges" fit-view-on-init :nodes-draggable="false" :zoom-on-scroll="false"><Background pattern-color="#2a2a2a" :gap="24" /><Controls /></VueFlow></div>
 </template>
