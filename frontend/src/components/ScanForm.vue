@@ -27,7 +27,7 @@ async function submit() {
     <label class="field-label" for="target-url">网站地址</label>
     <div class="scan-input-row">
       <span class="input-prefix">↗</span>
-      <el-input id="target-url" v-model="url" placeholder="https://your-authorized-site.com" type="url" required maxlength="2048" />
+      <el-input id="target-url" v-model="url" placeholder="https://你拥有或获准检测的网站" type="url" required maxlength="2048" />
       <el-button type="primary" native-type="submit" :loading="loading" :disabled="!authorized || !url.trim()">
         开始检测 <span aria-hidden="true">↗</span>
       </el-button>

@@ -6,12 +6,12 @@ import { api } from '../api'
 import ScanForm from '../components/ScanForm.vue'
 import type { Scan } from '../types'
 
-type TabKey = 'overview' | 'evidence' | 'topology'
+type TabKey = 'overview' | 'evidence'
 
 const FALLBACK: Scan[] = [
   {
     id: 3, url: 'https://react.demo.test/', final_url: 'https://react.demo.test/',
-    status_code: 200, content_type: 'text/html; charset=utf-8', title: 'SiteLens React Demo',
+    status_code: 200, content_type: 'text/html; charset=utf-8', title: '示例站点 · React 技术演示',
     headers: {}, meta: [], scripts: [], styles: [], created_at: '2026-11-05T12:00:00Z',
     ai_report_count: 0, ai_reports: [],
     technologies: [
@@ -26,7 +26,7 @@ const FALLBACK: Scan[] = [
   },
   {
     id: 2, url: 'https://wordpress.demo.test/', final_url: 'https://wordpress.demo.test/',
-    status_code: 200, content_type: 'text/html; charset=utf-8', title: 'SiteLens CMS Demo',
+    status_code: 200, content_type: 'text/html; charset=utf-8', title: '示例站点 · WordPress 技术演示',
     headers: {}, meta: [], scripts: [], styles: [], created_at: '2026-11-05T11:00:00Z',
     ai_report_count: 0, ai_reports: [],
     technologies: [
@@ -44,13 +44,12 @@ const FALLBACK: Scan[] = [
 const scans = ref<Scan[]>([])
 const totalScans = ref(0)
 const loading = ref(true)
-const source = ref<'LIVE API' | 'OFFLINE CACHE'>('OFFLINE CACHE')
+const source = ref<'实时接口' | '离线样本'>('离线样本')
 const activeTab = ref<TabKey>('overview')
 const expanded = ref<number | null>(null)
 const tabs: { key: TabKey; label: string }[] = [
-  { key: 'overview', label: '概览 / OVERVIEW' },
-  { key: 'evidence', label: '证据 / EVIDENCE' },
-  { key: 'topology', label: '架构 / TOPOLOGY' },
+  { key: 'overview', label: '识别概览' },
+  { key: 'evidence', label: '命中证据' },
 ]
 
 onMounted(async () => {
@@ -58,11 +57,11 @@ onMounted(async () => {
     const [recent, count] = await Promise.all([api.scans(8), api.scanCount()])
     scans.value = recent
     totalScans.value = count.count
-    source.value = 'LIVE API'
+    source.value = '实时接口'
   } catch (error) {
     scans.value = FALLBACK
     totalScans.value = FALLBACK.length
-    source.value = 'OFFLINE CACHE'
+    source.value = '离线样本'
     ElMessage.error(error instanceof Error ? `实时数据不可用，已显示内置样本。${error.message}` : '实时数据不可用，已显示内置样本。')
   } finally {
     loading.value = false
@@ -87,36 +86,36 @@ function onTabKey(event: KeyboardEvent, index: number) {
 function toggle(index: number) { expanded.value = expanded.value === index ? null : index }
 function date(value: string) { return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) }
 function hostOf(value: string) { try { return new URL(value).hostname } catch { return value } }
-function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW' } as Record<string, string>)[value] ?? value.toUpperCase() }
+function level(value: string) { return ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[value] ?? value }
 </script>
 
 <template>
   <div class="page-wrap tactical">
     <header class="tac-hero">
-      <div class="tac-eyebrow"><span class="cross">+</span><span>REV 2026.11</span><i></i><span>UNIT / SL-01</span><i></i><span>LOCAL DEPLOYMENT</span></div>
-      <h1 class="tac-title">SITELENS<span>/ DETECT</span></h1>
-      <p class="tac-sub">&gt;&gt;&gt; WEB TECHNOLOGY INTELLIGENCE / EVIDENCE BOUND</p>
-      <p class="tac-lede">用一次普通公开 GET 还原网站的技术栈。每一项识别都带着命中的响应证据。AI 只解释观测结果，不参与判定。本机运行，数据不上传。</p>
+      <div class="tac-eyebrow"><span class="cross">+</span><span>版本 2026.11</span><i></i><span>单元 SL-01</span><i></i><span>本机运行 · 数据不出设备</span></div>
+      <h1 class="tac-title">网站技术<span>识别与分析</span></h1>
+      <p class="tac-sub">&gt;&gt;&gt; 基于公开证据 · 每项识别都可追溯</p>
+      <p class="tac-lede">用一次普通公开请求还原网站的技术栈。每一项识别都列出命中的响应证据，AI 只解释观测结果，不参与判定。系统在本机运行，不需要账号，也不上传数据。</p>
       <div class="tac-cta">
-        <a class="tac-btn primary" href="#detection">[ VIEW DETECTION OUTPUT ] <span>↓</span></a>
-        <RouterLink class="tac-btn" to="/compare">[ COMPARE HISTORY ] <span>→</span></RouterLink>
+        <a class="tac-btn primary" href="#detection">查看检测结果 <span>↓</span></a>
+        <RouterLink class="tac-btn" to="/compare">对比历史记录 <span>→</span></RouterLink>
       </div>
     </header>
 
     <section class="tac-readouts" aria-label="系统遥测">
-      <div class="readout"><span class="label">SCANS / 检测</span><strong>{{ totalScans.toString().padStart(2, '0') }}</strong></div>
-      <div class="readout"><span class="label">TECH / 技术</span><strong class="accent">{{ uniqueTech.toString().padStart(2, '0') }}</strong></div>
-      <div class="readout"><span class="label">EVIDENCE / 证据</span><strong>{{ totalEvidence.toString().padStart(2, '0') }}</strong></div>
-      <div class="readout"><span class="label">SOURCE / 数据源</span><strong class="small">{{ source }}</strong></div>
+      <div class="readout"><span class="label">检测次数</span><strong>{{ totalScans.toString().padStart(2, '0') }}</strong></div>
+      <div class="readout"><span class="label">识别技术</span><strong class="accent">{{ uniqueTech.toString().padStart(2, '0') }}</strong></div>
+      <div class="readout"><span class="label">证据字段</span><strong>{{ totalEvidence.toString().padStart(2, '0') }}</strong></div>
+      <div class="readout"><span class="label">数据来源</span><strong class="small">{{ source }}</strong></div>
     </section>
 
     <section class="tac-block">
-      <div class="tac-head"><span><b>[ 01 ] NEW SCAN</b> / 输入网址开始检测</span><span class="hint">PUBLIC GET ONLY / 需勾选授权</span></div>
+      <div class="tac-head"><span><b>[ 01 ] 新建检测</b> · 输入网址开始</span><span class="hint">仅采集公开信息 · 需勾选授权</span></div>
       <div class="tac-scan"><ScanForm /></div>
     </section>
 
     <section id="detection" class="tac-block">
-      <div class="tac-head"><span><b>[ 02 ] DETECTION OUTPUT</b> / {{ focusScan?.title || '识别结果' }}</span><span class="hint">CLICK ANY ROW TO EXPAND EVIDENCE ↓</span></div>
+      <div class="tac-head"><span><b>[ 02 ] 识别结果</b> · {{ focusScan?.title || '演示样本' }}</span><span class="hint">点击任意一行，展开命中证据 ↓</span></div>
       <div class="tac-tabs" role="tablist" aria-label="检测结果视图">
         <button v-for="(tab, index) in tabs" :key="tab.key" :id="'tab-' + tab.key" role="tab" type="button"
           :aria-selected="activeTab === tab.key" :tabindex="activeTab === tab.key ? 0 : -1"
@@ -126,13 +125,13 @@ function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW
       </div>
 
       <div v-if="activeTab === 'overview'" class="tac-pane" role="tabpanel">
-        <div class="tac-meta"><span>TARGET: {{ focusScan?.final_url }}</span><span>HTTP {{ focusScan?.status_code }}</span><span>ENGINE: FINGERPRINT</span></div>
+        <div class="tac-meta"><span>目标：{{ focusScan?.final_url }}</span><span>状态码 {{ focusScan?.status_code }}</span><span>引擎：指纹规则</span></div>
         <div v-if="technologies.length" class="tech-list">
           <div v-for="(tech, index) in technologies" :key="tech.name" class="tech-row">
             <button class="tech-trigger" type="button" :aria-expanded="expanded === index" :aria-controls="'ev-' + index" @click="toggle(index)">
               <span class="num">{{ String(index + 1).padStart(2, '0') }}</span>
               <span class="tech-name">{{ tech.name }}</span>
-              <span class="tech-cat">{{ tech.category }}</span>
+              <span class="tech-cat">{{ tech.category_label }}</span>
               <span class="tech-score">{{ tech.score }} / {{ level(tech.confidence) }}</span>
               <span class="chev" :class="{ open: expanded === index }">›</span>
             </button>
@@ -143,54 +142,37 @@ function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW
             </div>
           </div>
         </div>
-        <div v-else class="tac-empty">[ NO MATCH ] 本次响应没有命中已知指纹。这不代表目标没有使用相关技术。</div>
+        <div v-else class="tac-empty">[ 未命中 ] 本次响应没有命中已知指纹。这不代表目标没有使用相关技术。</div>
       </div>
 
       <div v-else-if="activeTab === 'evidence'" class="tac-pane" role="tabpanel">
-        <div class="tac-meta"><span>TRACE / 每条技术都绑定命中的公开响应字段</span><span>{{ evidenceCount }} FIELDS</span></div>
+        <div class="tac-meta"><span>每条技术都绑定命中的公开响应字段</span><span>共 {{ evidenceCount }} 条</span></div>
         <article v-for="tech in technologies" :key="tech.name" class="trace-group">
           <div class="tac-meta"><span class="accent">[ {{ tech.name.toUpperCase() }} ]</span><span>{{ level(tech.confidence) }} / {{ tech.score }}</span></div>
           <div v-for="(item, i) in tech.evidence" :key="i" class="evidence-line">
             <span class="src">{{ item.source }}</span><span class="matched">{{ item.matched }}</span><span class="w">+{{ item.weight }}</span>
           </div>
         </article>
-        <div v-if="!technologies.length" class="tac-empty">[ NO EVIDENCE ] 暂无可追溯的命中字段。</div>
+        <div v-if="!technologies.length" class="tac-empty">[ 暂无证据 ] 本次没有可追溯的命中字段。</div>
       </div>
 
-      <div v-else class="tac-pane" role="tabpanel">
-        <div class="tac-meta"><span>HYPOTHESIS / 根据公开信号推测，不代表已证实的内部部署</span></div>
-        <pre class="topology">  [ PUBLIC RESPONSE ] ───────────┬──────────────────────
-                               │
-     ┌─────────────────────────┼─────────────────────────┐
-     │                         │                         │
-  [ WORDPRESS ]            [ APACHE ]               [ REACT ]
-  meta:generator          header:server            script:src
-     │                         │                         │
-     └─────────────────────────┼─────────────────────────┘
-                               │
-                         [ EVIDENCE ]
-                   {{ evidenceCount }} MATCHED FIELDS / {{ displayScans.length }} SCANS
-
-  NOTE: 连线只表示这些技术在同一次公开响应中被观察到。
-        工具无法看到网站内部请求路径或部署拓扑。</pre>
-      </div>
     </section>
 
     <section class="tac-block">
-      <div class="tac-head"><span><b>[ 03 ] INDEX</b> / 最近检测</span><span class="hint">每一行都可点击 →</span></div>
-      <div v-if="loading" class="tac-empty">[ LOADING ] 正在读取本机历史记录…</div>
-      <div v-else-if="!displayScans.length" class="tac-empty">[ EMPTY ] 完成第一次授权检测后，结果会显示在这里。</div>
+      <div class="tac-head"><span><b>[ 03 ] 最近记录</b></span><span class="hint">每一行都可点击 →</span></div>
+      <div v-if="loading" class="tac-empty">[ 读取中 ] 正在读取本机历史记录…</div>
+      <div v-else-if="!displayScans.length" class="tac-empty">[ 暂无记录 ] 完成第一次授权检测后，结果会显示在这里。</div>
       <div v-else class="index-list">
         <RouterLink v-for="(scan, index) in displayScans.slice(0, 8)" :key="scan.id" :to="`/scans/${scan.id}`" class="index-row">
           <span class="num">{{ String(index + 1).padStart(2, '0') }}</span>
           <span class="row-title">{{ scan.title || hostOf(scan.final_url) }}</span>
-          <span class="row-note">{{ scan.technologies.length }} TECH / {{ date(scan.created_at) }}</span>
+          <span class="row-note">{{ scan.technologies.length }} 项技术 · {{ date(scan.created_at) }}</span>
           <span class="go">→</span>
         </RouterLink>
       </div>
     </section>
 
-    <footer class="page-footer"><span>SITELENS™ / REV 2.6</span><span>识别结果由公开证据支持；架构关系仅为推测。</span><span>LOCAL BUILD · NO CLOUD</span></footer>
+    <footer class="page-footer"><span>毕业设计作品 · 本机演示</span><span>识别结果由公开证据支持；架构关系仅为推测。</span><span>无需账号 · 数据不上传</span></footer>
   </div>
 </template>
 
@@ -200,8 +182,8 @@ function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW
 .tac-eyebrow { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; font-size: 10px; letter-spacing: .1em; color: #8a8a8a; text-transform: uppercase; }
 .tac-eyebrow .cross { color: var(--alert); font-size: 15px; line-height: 1; }
 .tac-eyebrow i { width: 24px; height: 1px; background: #3a3a3a; }
-.tac-title { margin: 34px 0 14px; font-size: clamp(44px, 7.5vw, 104px); font-weight: 800; line-height: .87; letter-spacing: -.055em; text-transform: uppercase; color: #eaeaea; }
-.tac-title span { display: block; color: #6a6a6a; font-weight: 500; }
+.tac-title { margin: 34px 0 14px; font-size: clamp(44px, 7.5vw, 104px); font-weight: 800; line-height: 1.08; letter-spacing: -.04em; color: #eaeaea; }
+.tac-title span { display: block; color: #9a9a9a; font-weight: 500; }
 .tac-sub { margin: 0 0 20px; font-size: 11px; letter-spacing: .1em; color: var(--alert); }
 .tac-lede { max-width: 62ch; margin: 0 0 30px; font-size: 13px; line-height: 1.7; color: #9a9a9a; text-wrap: pretty; }
 .tac-cta { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -225,7 +207,7 @@ function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW
 .tac-head .hint { color: var(--alert); }
 .tac-scan { padding: 20px 22px; border: 1px solid #2a2a2a; border-top: 0; background: #101010; }
 
-.tac-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: #2a2a2a; border: 1px solid #2a2a2a; border-top: 0; }
+.tac-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #2a2a2a; border: 1px solid #2a2a2a; border-top: 0; }
 .tac-tabs button { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border: 0; border-bottom: 2px solid transparent; background: #0a0a0a; color: #8a8a8a; font-size: 10.5px; letter-spacing: .06em; cursor: pointer; text-align: left; transition: background .2s, color .2s, border-color .2s; }
 .tac-tabs button:hover { background: #161616; color: #eaeaea; }
 .tac-tabs button[aria-selected="true"] { background: #161616; color: var(--alert); border-bottom-color: var(--alert); }
@@ -252,7 +234,6 @@ function level(value: string) { return ({ high: 'HIGH', medium: 'MED', low: 'LOW
 .evidence-line .w { text-align: right; color: #8a8a8a; font-variant-numeric: tabular-nums; }
 .trace-group { margin-bottom: 20px; }
 .trace-group .tac-meta { margin-bottom: 8px; }
-.topology { margin: 0; overflow-x: auto; font-size: 11px; line-height: 1.8; color: #c8c8c8; white-space: pre; }
 
 .index-list { border-bottom: 1px solid #2a2a2a; }
 .index-row { display: grid; grid-template-columns: 54px minmax(0, 1fr) 260px 24px; align-items: center; gap: 18px; padding: 20px 8px; border-bottom: 1px solid #2a2a2a; text-decoration: none; color: inherit; transition: background .2s, padding .2s; }
