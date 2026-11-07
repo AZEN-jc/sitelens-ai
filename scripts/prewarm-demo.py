@@ -14,12 +14,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
-from sqlmodel import Session, select
-
+import httpx
 from app.database import initialize_database, make_engine
 from app.detector import detect
 from app.fetcher import fetch_page
 from app.models import EvidenceRow, ScanRow, TechnologyRow
+from app.security import TargetError
+from sqlmodel import Session, select
 
 SHOWCASE = (
     "https://wordpress.org",
@@ -77,7 +78,7 @@ async def main_async() -> int:
                 continue
             try:
                 page = await fetch_page(target)
-            except Exception as exc:
+            except (TargetError, TimeoutError, httpx.HTTPError, OSError) as exc:
                 print(f"× {target} 请求失败：{type(exc).__name__} {str(exc)[:60]}")
                 failed += 1
                 continue

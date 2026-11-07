@@ -10,12 +10,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 
-from sqlmodel import Session, select
-
 from app.database import initialize_database, make_engine
 from app.detector import detect
 from app.fetcher import parse_snapshot
 from app.models import EvidenceRow, ScanRow, TechnologyRow
+from sqlmodel import Session, select
 
 DEMO_SITES = (
     ("wordpress", "https://wordpress.demo.test/", "Apache"),
