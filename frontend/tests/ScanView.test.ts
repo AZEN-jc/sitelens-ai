@@ -116,8 +116,8 @@ describe('ScanView', () => {
     })
     await flushPromises()
 
-    expect(wrapper.text()).toContain('可确认 1 项技术：Nginx')
-    expect(wrapper.text()).toContain('列为疑似')
+    expect(wrapper.text()).toContain('可以确认这个网站使用了：Nginx')
+    expect(wrapper.text()).toContain('仅供参考')
     expect(wrapper.text()).toContain('Vue')
   })
 })

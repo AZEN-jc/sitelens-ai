@@ -100,14 +100,14 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
     <section v-if="activeTab === 'overview'" class="result-grid">
       <div class="result-main">
         <div v-if="verdict.kind !== 'none'" class="verdict-panel" :class="verdict.kind">
-          <div class="verdict-head"><span class="verdict-tag">{{ verdict.kind === 'confirmed' ? '检测结论' : '暂定结论' }}</span>
-            <strong v-if="verdict.kind === 'confirmed'">可确认 {{ verdict.confirmedList.length }} 项技术：{{ verdict.confirmedList.map(item => item.name).join('、') }}</strong>
-            <strong v-else>没有可直接确认的结论</strong>
+          <div class="verdict-head"><span class="verdict-tag">{{ verdict.kind === 'confirmed' ? '检测结论' : '初步发现' }}</span>
+            <strong v-if="verdict.kind === 'confirmed'">可以确认这个网站使用了：{{ verdict.confirmedList.map(item => item.name).join('、') }}</strong>
+            <strong v-else>没有足够把握下结论</strong>
           </div>
-          <p v-if="verdict.kind === 'confirmed'">以上每一项都至少有一条来自响应头或页面声明的直接证据，可复查源码核实。<template v-if="verdict.suspected.length">另有 {{ verdict.suspected.length }} 项（{{ verdict.suspected.map(item => item.name).join('、') }}）仅命中间接特征，列为疑似，不作为结论。</template></p>
-          <p v-else>命中的 {{ verdict.suspected.length }} 项（{{ verdict.suspected.map(item => item.name).join('、') }}）仅依赖间接特征（如脚本命名或页面关键字），不足以作为确认结论。</p>
+          <p v-if="verdict.kind === 'confirmed'">判断依据：这些技术在网站的响应头或页面声明里<em>白纸黑字</em>写明了自己的身份，就像身份证一样，不是靠猜的。<template v-if="verdict.suspected.length">另外发现了 {{ verdict.suspected.map(item => item.name).join('、') }} 的踪迹，但只是靠文件名之类的旁证推断，仅供参考。</template></p>
+          <p v-else>这次发现了 {{ verdict.suspected.map(item => item.name).join('、') }} 的踪迹，但都只是文件名、页面关键字之类的旁证，可能误判，所以不下定论。</p>
         </div>
-        <div class="section-title-row compact"><div><div class="eyebrow">指纹规则 · 匹配到 {{ scan.technologies.length }} 项技术</div><h2>识别结果</h2></div><span class="confidence-note">置信等级是项目内部规则评分</span></div>
+        <div class="section-title-row compact"><div><div class="eyebrow">自动比对 · 找到 {{ scan.technologies.length }} 项技术踪迹</div><h2>识别结果</h2></div><span class="confidence-note">分数越高，把握越大</span></div>
         <div v-if="scan.technologies.length" class="technology-grid">
           <article v-for="tech in scan.technologies" :key="tech.name" class="technology-card">
             <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级</span></div>
@@ -115,7 +115,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
             <button class="evidence-link" @click="activeTab = 'evidence'">{{ tech.evidence.length }} 条证据 <span>↗</span></button>
           </article>
         </div>
-        <div v-else class="empty-state small-empty">本次响应没有匹配到已知指纹。这不代表该网站没有使用相关技术。</div>
+        <div v-else class="empty-state small-empty">这次没有发现任何线索。注意：没发现不等于没用——有些技术的踪迹藏在接口响应里，一次普通访问看不到。</div>
       </div>
       <aside class="result-side"><div class="side-panel"><div class="eyebrow">技术分类</div><h3>按类别统计</h3><TechnologyChart v-if="categories.length" :categories="categories" /><div v-else class="chart-empty">暂无匹配证据</div></div>
         <div class="side-panel observed-panel"><div class="eyebrow">响应中观察到的信息</div><h3>公开信号</h3><dl><dt>网页标题</dt><dd>{{ scan.title || '未提供' }}</dd><dt>JavaScript 资源</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS 资源</dt><dd>{{ scan.styles.length }}</dd><dt>Meta 信息</dt><dd>{{ scan.meta.length }}</dd></dl></div>
@@ -124,7 +124,7 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
 
     <section v-else-if="activeTab === 'evidence'" class="tab-content">
       <div class="section-title-row compact"><div><div class="eyebrow">追溯每一条匹配</div><h2>识别证据</h2></div></div>
-      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category_label }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '直接' : '间接' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
+      <article v-for="tech in scan.technologies" :key="tech.name" class="evidence-card"><div class="evidence-heading"><span class="tech-symbol">◈</span><div><h3>{{ tech.name }}</h3><span>{{ tech.category_label }} · {{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级 · 评分 {{ tech.score }}/100</span></div></div><div v-for="item in tech.evidence" :key="`${item.source}-${item.matched}`" class="evidence-row"><span class="evidence-kind" :class="item.kind">{{ item.kind === 'direct' ? '白纸黑字' : '旁证推断' }}</span><code>{{ item.source }}</code><p>{{ item.matched }}</p><small>权重 {{ item.weight }}</small></div></article>
       <div v-if="!scan.technologies.length" class="empty-state">没有匹配到证据。</div>
     </section>
 
