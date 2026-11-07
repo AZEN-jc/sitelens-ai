@@ -231,12 +231,12 @@
     "rules": [
       {
         "source": "script_src",
-        "pattern": "jquery(?:[-.]\\d|\\.min)?\\.js(?:$|\\?)",
+        "pattern": "(?<![a-z0-9])jquery[^/?]*\\.js(?:$|\\?)",
         "weight": 75
       },
       {
         "source": "html",
-        "pattern": "jquery[-.\\d]{0,4}(?:\\.min)?\\.js",
+        "pattern": "(?<![a-z0-9])jquery[^/\"\\'\\s>]*\\.(?:min\\.)?js",
         "weight": 55
       }
     ]
