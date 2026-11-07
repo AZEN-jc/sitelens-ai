@@ -110,11 +110,40 @@ const redirected = computed(() => {
   if (!scan.value) return false
   try { return new URL(scan.value.url).hostname !== new URL(scan.value.final_url).hostname } catch { return scan.value.url !== scan.value.final_url }
 })
+function interpretServer(value: string): string {
+  const v = value.toLowerCase()
+  if (v.includes('bws')) return 'BWS 是百度自家研发的服务器程序。说明这个网站的核心设施是自研的，不是市面通用方案。'
+  if (v.includes('tengine')) return 'Tengine 是淘宝在 Nginx 基础上改造的版本，国内大型网站常用。'
+  if (v.includes('openresty')) return 'OpenResty 是带编程能力的 Nginx 变种，国内大厂常用它做流量入口。'
+  if (v.includes('nginx')) return 'Nginx 是全球使用最广泛的网页服务器之一，说明网站跑在成熟的通用设施上。'
+  if (v.includes('apache') && !v.includes('coyote')) return 'Apache 是历史最悠久的网页服务器之一，常见于传统建站方案。'
+  if (v.includes('iis')) return 'IIS 是微软家的服务器，说明网站大概率运行在 Windows 服务器上。'
+  if (v.includes('cloudflare')) return '这个网站把流量放在 Cloudflare 的防护与加速网络后面。'
+  if (v.includes('litespeed') || v.includes('caddy')) return '一款注重性能或易用性的现代网页服务器。'
+  return '网站主动报出了服务器程序的名称。这类自我介绍写在协议响应里，可信度高。'
+}
+const HEADER_WHY: Record<string, (value: string) => string> = {
+  server: interpretServer,
+  'x-powered-by': () => '网站后端使用的语言或框架，同样是网站自己承认的。不少站点出于安全考虑会隐藏它。',
+  via: () => '说明这次响应经过了中间的代理或缓存层，你看到的可能是缓存的副本。',
+  'cf-ray': () => '说明这个网站使用了 Cloudflare 的防护或加速服务。',
+  'content-type': () => '告诉浏览器用什么格式解析这次响应，网页就是 text/html。',
+}
+const META_WHY: Record<string, string> = {
+  generator: '制作工具自己留下的署名，就像简历上的「使用工具」一栏，是判断建站方式最直接的证据。',
+  'application-name': '网站官方登记的应用名称。',
+  'og:site_name': '网站被分享到社交平台时希望显示的名字。',
+  robots: '网站告诉搜索引擎哪些内容允许被抓取。',
+  viewport: '说明页面针对手机屏幕做了适配。',
+}
+const SIGNALS_WHY = '数这几项是因为：加载了哪些脚本和样式，是识别前端技术的重要线索；标题和声明则来自网站自己的交代。下面列出它们的具体内容。'
 const headerRows = computed(() => Object.entries(scan.value?.headers || {}).map(([key, value]) => ({
   label: HEADER_LABELS[key] || key, value,
+  why: (HEADER_WHY[key] || (() => '这项信息由网站在响应中主动提供。'))(value),
 })))
 const metaRows = computed(() => (scan.value?.meta || []).map(item => ({
   label: META_LABELS[item.name] || item.name, value: item.content,
+  why: META_WHY[item.name] || '这是页面代码里的一条自我说明。',
 })))
 </script>
 
@@ -141,9 +170,9 @@ const metaRows = computed(() => (scan.value?.meta || []).map(item => ({
           <p v-else>这次发现了 {{ verdict.suspected.map(item => item.name).join('、') }} 的踪迹，但都只是文件名、页面关键字之类的旁证，可能误判，所以不下定论。</p>
         </div>
       <div class="site-profile">
-        <div class="profile-cell"><div class="eyebrow">响应中观察到的信息</div><h3>公开信号</h3><dl><dt>网页标题</dt><dd>{{ scan.title || '未提供' }}</dd><dt>JavaScript 资源</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS 资源</dt><dd>{{ scan.styles.length }}</dd><dt>Meta 信息</dt><dd>{{ scan.meta.length }}</dd></dl></div>
-        <div v-if="headerRows.length" class="profile-cell"><div class="eyebrow">网站自己报告的身份</div><h3>响应头明细</h3><dl class="detail-list"><template v-for="row in headerRows" :key="row.label"><dt>{{ row.label }}</dt><dd><code>{{ row.value }}</code></dd></template></dl></div>
-        <div v-if="metaRows.length" class="profile-cell"><div class="eyebrow">页面对搜索引擎的说明</div><h3>页面声明</h3><dl class="detail-list"><template v-for="row in metaRows" :key="row.label"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></template></dl></div>
+        <div class="profile-cell"><div class="eyebrow">响应中观察到的信息</div><h3>公开信号</h3><dl><dt>网页标题</dt><dd>{{ scan.title || '未提供' }}</dd><dt>JavaScript 资源</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS 资源</dt><dd>{{ scan.styles.length }}</dd><dt>Meta 信息</dt><dd>{{ scan.meta.length }}</dd></dl><p class="signal-why">{{ SIGNALS_WHY }}</p></div>
+        <div class="profile-cell"><div class="eyebrow">网站自己报告的身份</div><h3>响应头明细</h3><dl class="detail-list"><template v-if="headerRows.length"><template v-for="row in headerRows" :key="row.label"><dt>{{ row.label }}</dt><dd><code>{{ row.value }}</code></dd><dd class="signal-why">{{ row.why }}</dd></template></template><dd v-else class="signal-why">网站没有自报服务器身份。很多站点出于安全考虑会隐藏这一项，所以没显示不等于没有服务器。</dd></dl></div>
+        <div v-if="metaRows.length" class="profile-cell"><div class="eyebrow">页面对搜索引擎的说明</div><h3>页面声明</h3><dl class="detail-list"><template v-for="row in metaRows" :key="row.label"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd><dd class="signal-why">{{ row.why }}</dd></template></dl></div>
       </div>
       <details v-if="scan.scripts.length || scan.styles.length" class="resource-panel"><summary><span class="resource-summary-mark">＋</span>页面加载了哪些外部文件（脚本 {{ scan.scripts.length }} · 样式 {{ scan.styles.length }}）</summary>
         <div class="resource-columns">
@@ -225,6 +254,7 @@ const metaRows = computed(() => (scan.value?.meta || []).map(item => ({
 .detail-list dt { margin-top: 8px; }
 .detail-list dd { margin: 2px 0 0; word-break: break-all; }
 .detail-list dd code { font-size: 11px; color: #d0d0d0; }
+.signal-why { font-size: 11px; line-height: 1.7; color: #8a8a8a; margin: 4px 0 0; max-width: 46em; }
 .redirect-note { margin: 10px 0 0; font-size: 12px; color: #9a9a9a; }
 .redirect-note code { color: #d0d0d0; }
 .resource-panel { border: 1px solid #2a2a2a; background: #101010; padding: 12px 16px; }
