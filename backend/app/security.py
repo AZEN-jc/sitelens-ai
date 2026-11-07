@@ -10,7 +10,7 @@ import httpx
 
 MAX_BODY_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 5
-TIMEOUT_SECONDS = 10
+TIMEOUT_SECONDS = 30
 
 
 class TargetError(ValueError):
