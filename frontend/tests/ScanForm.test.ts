@@ -11,17 +11,21 @@ vi.mock('../src/router', () => ({ router: { push: vi.fn() } }))
 describe('ScanForm', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('requires authorization before submitting the target', async () => {
+  it('submits a bare domain and navigates to the scan', async () => {
     vi.mocked(api.createScan).mockResolvedValue({ id: 7 } as never)
     const wrapper = mount(ScanForm, { global: { components: { ElButton, ElInput } } })
-    await wrapper.find('input[type="url"]').setValue('https://example.test')
-    await wrapper.find('form').trigger('submit')
-    expect(api.createScan).not.toHaveBeenCalled()
-
-    await wrapper.find('input[type="checkbox"]').setValue(true)
+    await wrapper.find('input[type="text"]').setValue('example.test')
     await wrapper.find('form').trigger('submit')
     await flushPromises()
-    expect(api.createScan).toHaveBeenCalledWith('https://example.test')
+    expect(api.createScan).toHaveBeenCalledWith('example.test')
     expect(router.push).toHaveBeenCalledWith('/scans/7')
+  })
+
+  it('does not call the api when the url is empty', async () => {
+    const wrapper = mount(ScanForm, { global: { components: { ElButton, ElInput } } })
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+    expect(api.createScan).not.toHaveBeenCalled()
+    expect(router.push).not.toHaveBeenCalled()
   })
 })
