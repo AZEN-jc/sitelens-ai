@@ -83,6 +83,39 @@ async function analyze() {
 }
 
 function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_blank', 'noopener') }
+
+const HEADER_LABELS: Record<string, string> = {
+  server: '服务器身份（Server）',
+  'x-powered-by': '框架标识（X-Powered-By）',
+  via: '经过的代理（Via）',
+  'cf-ray': 'Cloudflare 节点编号（CF-Ray）',
+  'content-type': '内容类型（Content-Type）',
+}
+const META_LABELS: Record<string, string> = {
+  generator: '页面生成器声明',
+  'application-name': '应用名称',
+  'og:site_name': '站点名称',
+  robots: '搜索引擎抓取规则',
+  viewport: '移动端适配声明',
+}
+const durationLabel = computed(() => {
+  const value = scan.value?.duration_ms || 0
+  return value > 0 ? `${(value / 1000).toFixed(2)} 秒` : ''
+})
+const pageSizeLabel = computed(() => {
+  const value = scan.value?.page_bytes || 0
+  return value > 0 ? `${(value / 1024).toFixed(1)} KB` : ''
+})
+const redirected = computed(() => {
+  if (!scan.value) return false
+  try { return new URL(scan.value.url).hostname !== new URL(scan.value.final_url).hostname } catch { return scan.value.url !== scan.value.final_url }
+})
+const headerRows = computed(() => Object.entries(scan.value?.headers || {}).map(([key, value]) => ({
+  label: HEADER_LABELS[key] || key, value,
+})))
+const metaRows = computed(() => (scan.value?.meta || []).map(item => ({
+  label: META_LABELS[item.name] || item.name, value: item.content,
+})))
 </script>
 
 <template>
@@ -92,7 +125,8 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
       <div><div class="eyebrow">检测结果 / {{ String(scan.id).padStart(4, '0') }}</div><h1>{{ scan.title || hostOf(scan.final_url) }}</h1><a class="url-display" :href="scan.final_url" target="_blank" rel="noreferrer">{{ scan.final_url }} ↗</a></div>
       <div class="scan-actions"><span class="complete-badge"><i></i>检测完成</span><el-button @click="openPrintReport">导出报告 ↗</el-button></div>
     </div>
-    <div class="result-meta"><span><small>HTTP 状态</small><b>{{ scan.status_code }}</b></span><span><small>技术数量</small><b>{{ scan.technologies.length.toString().padStart(2, '0') }}</b></span><span><small>内容类型</small><b>{{ scan.content_type || '未知' }}</b></span><span><small>检测时间</small><b>{{ new Date(scan.created_at).toLocaleString('zh-CN') }}</b></span></div>
+    <div class="result-meta"><span><small>HTTP 状态</small><b>{{ scan.status_code }}</b></span><span v-if="durationLabel"><small>响应耗时</small><b>{{ durationLabel }}</b></span><span v-if="pageSizeLabel"><small>页面大小</small><b>{{ pageSizeLabel }}</b></span><span><small>技术数量</small><b>{{ scan.technologies.length.toString().padStart(2, '0') }}</b></span><span><small>内容类型</small><b>{{ scan.content_type || '未知' }}</b></span><span><small>检测时间</small><b>{{ new Date(scan.created_at).toLocaleString('zh-CN') }}</b></span></div>
+    <div v-if="redirected" class="redirect-note">访问的原地址发生了跳转，最终停在了 <code>{{ scan.final_url }}</code></div>
     <nav class="result-tabs" aria-label="检测结果分区">
       <button v-for="tab in ['overview', 'evidence', 'architecture', 'insights']" :key="tab" :class="{ selected: activeTab === tab }" @click="activeTab = tab">{{ ({ overview: '概览', evidence: '证据', architecture: '架构推测', insights: 'AI 分析' } as Record<string, string>)[tab] }}<span v-if="tab === 'insights' && scan.ai_reports.length" class="tab-count">{{ scan.ai_reports.length }}</span></button>
     </nav>
@@ -119,6 +153,12 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
       </div>
       <aside class="result-side"><div class="side-panel"><div class="eyebrow">技术分类</div><h3>按类别统计</h3><TechnologyChart v-if="categories.length" :categories="categories" /><div v-else class="chart-empty">暂无匹配证据</div></div>
         <div class="side-panel observed-panel"><div class="eyebrow">响应中观察到的信息</div><h3>公开信号</h3><dl><dt>网页标题</dt><dd>{{ scan.title || '未提供' }}</dd><dt>JavaScript 资源</dt><dd>{{ scan.scripts.length }}</dd><dt>CSS 资源</dt><dd>{{ scan.styles.length }}</dd><dt>Meta 信息</dt><dd>{{ scan.meta.length }}</dd></dl></div>
+        <div v-if="headerRows.length" class="side-panel"><div class="eyebrow">网站自己报告的身份</div><h3>响应头明细</h3><dl class="detail-list"><template v-for="row in headerRows" :key="row.label"><dt>{{ row.label }}</dt><dd><code>{{ row.value }}</code></dd></template></dl></div>
+        <div v-if="metaRows.length" class="side-panel"><div class="eyebrow">页面对搜索引擎的说明</div><h3>页面声明</h3><dl class="detail-list"><template v-for="row in metaRows" :key="row.label"><dt>{{ row.label }}</dt><dd>{{ row.value }}</dd></template></dl></div>
+        <details v-if="scan.scripts.length || scan.styles.length" class="side-panel resource-panel"><summary><div class="eyebrow">页面加载了哪些外部文件</div><h3>资源清单</h3></summary>
+          <div v-if="scan.scripts.length" class="resource-group"><h4>脚本文件（{{ scan.scripts.length }}）</h4><ul><li v-for="item in scan.scripts.slice(0, 10)" :key="item"><code>{{ item }}</code></li></ul><p v-if="scan.scripts.length > 10" class="inline-note">其余 {{ scan.scripts.length - 10 }} 个未列出。</p></div>
+          <div v-if="scan.styles.length" class="resource-group"><h4>样式表（{{ scan.styles.length }}）</h4><ul><li v-for="item in scan.styles.slice(0, 10)" :key="item"><code>{{ item }}</code></li></ul><p v-if="scan.styles.length > 10" class="inline-note">其余 {{ scan.styles.length - 10 }} 个未列出。</p></div>
+        </details>
       </aside>
     </section>
 
@@ -172,4 +212,17 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
 .verdict-panel.tentative .verdict-tag { border-color: #8a8a8a; color: #8a8a8a; }
 .verdict-head strong { font-size: 14px; color: #eaeaea; }
 .verdict-panel p { margin: 8px 0 0; font-size: 12px; line-height: 1.7; color: #9a9a9a; }
+
+.detail-list dt { margin-top: 8px; }
+.detail-list dd { margin: 2px 0 0; word-break: break-all; }
+.detail-list dd code { font-size: 11px; color: #d0d0d0; }
+.redirect-note { margin: 10px 0 0; font-size: 12px; color: #9a9a9a; }
+.redirect-note code { color: #d0d0d0; }
+.resource-panel summary { cursor: pointer; list-style: none; }
+.resource-panel summary::-webkit-details-marker { display: none; }
+.resource-panel summary h3 { display: inline; margin-left: 8px; }
+.resource-group h4 { margin: 12px 0 6px; font-size: 12px; color: #9a9a9a; font-weight: 500; }
+.resource-group ul { margin: 0; padding: 0; list-style: none; }
+.resource-group li { margin: 4px 0; }
+.resource-group code { font-size: 11px; color: #d0d0d0; word-break: break-all; }
 </style>

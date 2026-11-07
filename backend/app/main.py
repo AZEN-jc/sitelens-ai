@@ -116,7 +116,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
                 status_code=page.status_code,
                 title=page.title,
                 content_type=page.content_type,
-                summary_json=json.dumps({"headers": page.headers, "meta": page.meta, "scripts": page.scripts, "styles": page.styles}),
+                summary_json=json.dumps({"headers": page.headers, "meta": page.meta, "scripts": page.scripts, "styles": page.styles, "duration_ms": page.duration_ms, "page_bytes": page.page_bytes}),
             )
             session.add(scan)
             session.flush()

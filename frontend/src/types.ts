@@ -32,6 +32,8 @@ export interface Scan {
   meta: { name: string; content: string }[]
   scripts: string[]
   styles: string[]
+  duration_ms?: number
+  page_bytes?: number
   created_at: string
   technologies: Technology[]
   ai_report_count: number

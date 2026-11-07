@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, replace
 
 import httpx
 from bs4 import BeautifulSoup
@@ -31,6 +32,8 @@ class PageSnapshot:
     scripts: list[str]
     styles: list[str]
     html: str
+    duration_ms: int = 0
+    page_bytes: int = 0
 
     def signals(self):
         return {
@@ -97,8 +100,12 @@ def parse_snapshot(url: str, final_url: str, status_code: int, headers: dict[str
 
 
 async def fetch_page(value: str) -> PageSnapshot:
+    start = time.monotonic()
     async with asyncio.timeout(TIMEOUT_SECONDS):
-        return await _fetch_page(value)
+        page = await _fetch_page(value)
+    elapsed_ms = int((time.monotonic() - start) * 1000)
+    body_bytes = len(page.html.encode("utf-8", errors="replace"))
+    return replace(page, duration_ms=elapsed_ms, page_bytes=body_bytes)
 
 
 async def _fetch_page(value: str) -> PageSnapshot:

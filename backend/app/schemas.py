@@ -41,6 +41,8 @@ class ScanOut(BaseModel):
     meta: list[dict[str, str]]
     scripts: list[str]
     styles: list[str]
+    duration_ms: int = 0
+    page_bytes: int = 0
     created_at: datetime
     technologies: list[TechnologyOut]
     ai_report_count: int = 0

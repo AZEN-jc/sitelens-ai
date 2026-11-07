@@ -89,7 +89,9 @@ describe('ScanView', () => {
       status_code: 200,
       content_type: 'text/html',
       title: '结论演示',
-      headers: {},
+      headers: { server: 'BWS/1.1' },
+      duration_ms: 1234,
+      page_bytes: 20480,
       created_at: '2026-11-07T00:00:00Z',
       technologies: [
         { name: 'Nginx', category: 'Web server', category_label: 'Web 服务器', score: 85, confidence: 'high',
@@ -117,6 +119,11 @@ describe('ScanView', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('可以确认这个网站使用了：Nginx')
+    expect(wrapper.text()).toContain('响应耗时')
+    expect(wrapper.text()).toContain('1.23 秒')
+    expect(wrapper.text()).toContain('页面大小')
+    expect(wrapper.text()).toContain('20.0 KB')
+    expect(wrapper.text()).toContain('服务器身份（Server）')
     expect(wrapper.text()).toContain('仅供参考')
     expect(wrapper.text()).toContain('Vue')
   })
