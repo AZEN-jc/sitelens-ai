@@ -695,5 +695,130 @@
         "weight": 80
       }
     ]
+  },
+  {
+    "id": "laravel",
+    "name": "Laravel",
+    "category": "Web framework",
+    "rules": [
+      {
+        "source": "html",
+        "pattern": "<meta\\s+name=\"csrf-token\"",
+        "weight": 80
+      }
+    ]
+  },
+  {
+    "id": "remix",
+    "name": "Remix",
+    "category": "Web framework",
+    "rules": [
+      {
+        "source": "html",
+        "pattern": "__remixContext|window\\.__remixRouteModules",
+        "weight": 85
+      }
+    ]
+  },
+  {
+    "id": "vitepress",
+    "name": "VitePress",
+    "category": "Static site tool",
+    "rules": [
+      {
+        "source": "meta_generator",
+        "pattern": "vitepress",
+        "weight": 90
+      }
+    ]
+  },
+  {
+    "id": "vuepress",
+    "name": "VuePress",
+    "category": "Static site tool",
+    "rules": [
+      {
+        "source": "meta_generator",
+        "pattern": "vuepress",
+        "weight": 90
+      }
+    ]
+  },
+  {
+    "id": "element-ui",
+    "name": "Element UI",
+    "category": "UI framework",
+    "rules": [
+      {
+        "source": "script_src",
+        "pattern": "element-(?:ui|plus)[^/?]*\\.js(?:$|\\?)",
+        "weight": 80
+      }
+    ]
+  },
+  {
+    "id": "ant-design",
+    "name": "Ant Design",
+    "category": "UI framework",
+    "rules": [
+      {
+        "source": "script_src",
+        "pattern": "(?<![a-z0-9-])antd[^/?]*\\.js(?:$|\\?)",
+        "weight": 80
+      }
+    ]
+  },
+  {
+    "id": "swiper",
+    "name": "Swiper",
+    "category": "JavaScript library",
+    "rules": [
+      {
+        "source": "script_src",
+        "pattern": "(?<![a-z0-9])swiper[^/?]*\\.js(?:$|\\?)",
+        "weight": 70
+      }
+    ]
+  },
+  {
+    "id": "font-awesome",
+    "name": "Font Awesome",
+    "category": "UI framework",
+    "rules": [
+      {
+        "source": "style_href",
+        "pattern": "font-?awesome[^/?]*\\.css(?:$|\\?)",
+        "weight": 80
+      },
+      {
+        "source": "html",
+        "pattern": "font-?awesome[^/\"\\'\\s>]*\\.(?:min\\.)?css",
+        "weight": 55
+      }
+    ]
+  },
+  {
+    "id": "yandex-metrica",
+    "name": "Yandex Metrica",
+    "category": "Analytics",
+    "rules": [
+      {
+        "source": "html",
+        "pattern": "mc\\.yandex\\.ru/watch|ym\\(\\s*\\d+",
+        "weight": 85
+      }
+    ]
+  },
+  {
+    "id": "gitbook",
+    "name": "GitBook",
+    "category": "Site builder",
+    "rules": [
+      {
+        "source": "html",
+        "pattern": "gitbook\\.com|__gitbook",
+        "weight": 80
+      }
+    ]
   }
 ]

@@ -43,16 +43,13 @@ async def test_scan_history_evidence_compare_and_report(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_requires_authorization_and_escapes_report_html(tmp_path, monkeypatch):
+async def test_escapes_report_html(tmp_path, monkeypatch):
     async def fetch(url):
         return replace(page("<script>alert(1)</script>", "nginx"), url=url, final_url=url)
     monkeypatch.setattr(main, "fetch_page", fetch)
     app = main.create_app(f"sqlite:///{tmp_path / 'escape.db'}")
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-        denied = await client.post("/api/scans", json={"url": "https://example.test"})
-        assert denied.status_code == 400
-        assert "请先确认" in denied.json()["detail"]
-        scan = await client.post("/api/scans", json={"url": "https://example.test/?token=secret", "authorized": True})
+        scan = await client.post("/api/scans", json={"url": "https://example.test/?token=secret"})
         assert "token=secret" not in scan.json()["url"]
         report = await client.get(f"/api/reports/{scan.json()['id']}/export?format=html")
         assert "<script>alert(1)</script>" not in report.text

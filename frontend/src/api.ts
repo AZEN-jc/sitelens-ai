@@ -17,7 +17,7 @@ export const api = {
   scans: (limit = 30, offset = 0) => request<Scan[]>(`/scans?limit=${limit}&offset=${offset}`),
   scanCount: () => request<{ count: number }>('/scans/count'),
   scan: (id: string | number) => request<Scan>(`/scans/${id}`),
-  createScan: (url: string) => request<Scan>('/scans', { method: 'POST', body: JSON.stringify({ url, authorized: true }) }),
+  createScan: (url: string) => request<Scan>('/scans', { method: 'POST', body: JSON.stringify({ url }) }),
   compare: (first_scan_id: number, second_scan_id: number) => request<Record<string, unknown>>('/scans/compare', {
     method: 'POST', body: JSON.stringify({ first_scan_id, second_scan_id }),
   }),

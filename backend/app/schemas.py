@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field, SecretStr
 
 class ScanRequest(BaseModel):
     url: str = Field(min_length=1, max_length=2048)
-    authorized: bool = False
 
 
 class EvidenceOut(BaseModel):

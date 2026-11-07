@@ -99,8 +99,6 @@ def create_app(database_url: str | None = None) -> FastAPI:
 
     @app.post("/api/scans", response_model=ScanOut)
     async def create_scan(body: ScanRequest):
-        if not body.authorized:
-            raise HTTPException(400, "请先确认你拥有该网站，或已获准分析其公开技术特征。")
         try:
             page = await fetch_page(body.url)
         except TargetError as exc:

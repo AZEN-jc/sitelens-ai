@@ -30,8 +30,11 @@ def validate_target(
     *,
     resolver: Callable = socket.getaddrinfo,
 ) -> ValidatedTarget:
+    raw = value.strip()
+    if raw and "://" not in raw:
+        raw = "https://" + raw
     try:
-        url = httpx.URL(value.strip())
+        url = httpx.URL(raw)
     except (httpx.InvalidURL, ValueError) as exc:
         raise TargetError("请输入有效的网站 URL。") from exc
     if url.scheme not in {"http", "https"} or not url.host or url.userinfo:
