@@ -80,4 +80,44 @@ describe('ScanView', () => {
     expect(wrapper.find('a[href="/"]').text()).toContain('返回概览')
     expect(api.aiStatus).not.toHaveBeenCalled()
   })
+
+  it('states a confirmed verdict for direct evidence and marks indirect-only hits as suspected', async () => {
+    vi.mocked(api.scan).mockResolvedValue({
+      id: 43,
+      url: 'https://example.test',
+      final_url: 'https://example.test',
+      status_code: 200,
+      content_type: 'text/html',
+      title: '结论演示',
+      headers: {},
+      created_at: '2026-11-07T00:00:00Z',
+      technologies: [
+        { name: 'Nginx', category: 'Web server', category_label: 'Web 服务器', score: 85, confidence: 'high',
+          evidence: [{ source: 'header:server', matched: 'nginx', kind: 'direct', weight: 85 }] },
+        { name: 'Vue', category: 'Frontend framework', category_label: '前端框架', score: 45, confidence: 'medium',
+          evidence: [{ source: 'html', matched: 'data-v-1a2b', kind: 'indirect', weight: 45 }] },
+      ],
+      ai_report_count: 0,
+      ai_reports: [],
+      scripts: [],
+      styles: [],
+      meta: [],
+    })
+    vi.mocked(api.aiStatus).mockResolvedValue({ configured: false })
+
+    const wrapper = mount(ScanView, {
+      global: {
+        stubs: {
+          RouterLink: { props: ['to'], template: '<a :href="to"><slot /></a>' },
+          TechnologyChart: true,
+          ArchitectureGraph: true,
+        },
+      },
+    })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('可确认 1 项技术：Nginx')
+    expect(wrapper.text()).toContain('列为疑似')
+    expect(wrapper.text()).toContain('Vue')
+  })
 })

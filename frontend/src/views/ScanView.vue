@@ -51,6 +51,14 @@ const categories = computed(() => {
   }
   return [...counts].map(([name, value]) => ({ name, value }))
 })
+const verdict = computed(() => {
+  const techs = scan.value?.technologies || []
+  const hasDirect = (tech: typeof techs[number]) => tech.evidence.some(item => item.kind === 'direct')
+  const confirmedList = techs.filter(hasDirect)
+  const suspected = techs.filter(tech => !hasDirect(tech))
+  const kind = !techs.length ? 'none' : confirmedList.length ? 'confirmed' : 'tentative'
+  return { kind, confirmedList, suspected } as const
+})
 const aiPreview = computed(() => scan.value && ({
   url: scan.value.url,
   final_url: scan.value.final_url,
@@ -90,7 +98,16 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
     </nav>
 
     <section v-if="activeTab === 'overview'" class="result-grid">
-      <div class="result-main"><div class="section-title-row compact"><div><div class="eyebrow">指纹规则 · 匹配到 {{ scan.technologies.length }} 项技术</div><h2>识别结果</h2></div><span class="confidence-note">置信等级是项目内部规则评分</span></div>
+      <div class="result-main">
+        <div v-if="verdict.kind !== 'none'" class="verdict-panel" :class="verdict.kind">
+          <div class="verdict-head"><span class="verdict-tag">{{ verdict.kind === 'confirmed' ? '检测结论' : '暂定结论' }}</span>
+            <strong v-if="verdict.kind === 'confirmed'">可确认 {{ verdict.confirmedList.length }} 项技术：{{ verdict.confirmedList.map(item => item.name).join('、') }}</strong>
+            <strong v-else>没有可直接确认的结论</strong>
+          </div>
+          <p v-if="verdict.kind === 'confirmed'">以上每一项都至少有一条来自响应头或页面声明的直接证据，可复查源码核实。<template v-if="verdict.suspected.length">另有 {{ verdict.suspected.length }} 项（{{ verdict.suspected.map(item => item.name).join('、') }}）仅命中间接特征，列为疑似，不作为结论。</template></p>
+          <p v-else>命中的 {{ verdict.suspected.length }} 项（{{ verdict.suspected.map(item => item.name).join('、') }}）仅依赖间接特征（如脚本命名或页面关键字），不足以作为确认结论。</p>
+        </div>
+        <div class="section-title-row compact"><div><div class="eyebrow">指纹规则 · 匹配到 {{ scan.technologies.length }} 项技术</div><h2>识别结果</h2></div><span class="confidence-note">置信等级是项目内部规则评分</span></div>
         <div v-if="scan.technologies.length" class="technology-grid">
           <article v-for="tech in scan.technologies" :key="tech.name" class="technology-card">
             <div class="tech-card-top"><span class="tech-symbol">◈</span><span class="confidence-pill" :class="tech.confidence">{{ ({ high: '高', medium: '中', low: '低' } as Record<string, string>)[tech.confidence] }}置信等级</span></div>
@@ -137,3 +154,22 @@ function openPrintReport() { window.open(reportUrl(scan.value!.id, 'html'), '_bl
     </div>
   </div>
 </template>
+
+<style scoped>
+.verdict-panel {
+  border: 1px solid #2a2a2a;
+  border-left: 3px solid var(--alert, #e61919);
+  background: #141414;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.verdict-panel.tentative { border-left-color: #8a8a8a; }
+.verdict-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.verdict-tag {
+  font-size: 11px; letter-spacing: .08em; padding: 2px 8px;
+  border: 1px solid var(--alert, #e61919); color: var(--alert, #e61919); white-space: nowrap;
+}
+.verdict-panel.tentative .verdict-tag { border-color: #8a8a8a; color: #8a8a8a; }
+.verdict-head strong { font-size: 14px; color: #eaeaea; }
+.verdict-panel p { margin: 8px 0 0; font-size: 12px; line-height: 1.7; color: #9a9a9a; }
+</style>
