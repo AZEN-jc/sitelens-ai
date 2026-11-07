@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import html
 import json
 import os
 from pathlib import Path
@@ -17,6 +16,7 @@ from app.database import initialize_database, make_engine
 from app.detector import detect
 from app.fetcher import fetch_page
 from app.models import AIReportRow, EvidenceRow, ScanRow, TechnologyRow
+from app.report import render_html_report
 from app.schemas import (
     AIAnalysisRequest,
     AIConfigIn,
@@ -280,24 +280,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
             data = _scan_dict(session, scan)
         if format == "json":
             return Response(json.dumps(data, ensure_ascii=False, default=str, indent=2), media_type="application/json")
-        confidence_names = {"high": "高", "medium": "中", "low": "低"}
-        technologies = "".join(
-            f"<section><h2>{html.escape(item['name'])} <small>类别：{html.escape(item['category_label'])} · {confidence_names.get(item['confidence'], '未知')}置信等级</small></h2>"
-            + "".join(f"<p><b>证据来源：{html.escape(ev['source'])}</b>：{html.escape(ev['matched'])}</p>" for ev in item["evidence"])
-            + "</section>" for item in data["technologies"]
-        )
-        ai = "".join(f"<section><h2>AI 分析 · {html.escape(item['model'])}</h2><pre>{html.escape(item['content'])}</pre></section>" for item in data["ai_reports"])
-        document = (
-            "<!doctype html><html lang='zh-CN'><meta charset='utf-8'><title>SiteLens AI 检测报告</title>"
-            "<style>body{font:16px system-ui;max-width:900px;margin:40px auto;background:#101720;color:#e8eef6}"
-            "section{padding:18px;border:1px solid #344254;border-radius:12px;margin:16px 0}small{color:#9aabc0}pre{white-space:pre-wrap}"
-            "@media print{body{background:#fff;color:#111;margin:0}section{border-color:#bbb;break-inside:avoid}small{color:#555}}</style>"
-            f"<h1>网站检测报告</h1><p>检测网址：{html.escape(data['url'])} · HTTP 状态：{data['status_code']} · 检测时间：{html.escape(data['created_at'].isoformat())}</p>"
-            f"<h2>{html.escape(data['title'])}</h2>{technologies}{ai}"
-            "<p>识别依据为公开响应证据。置信等级是项目内部规则分数，不代表统计概率。"
-            "架构关系仅为推测；本次缺少证据不代表技术已被移除。</p></html>"
-        )
-        return Response(document, media_type="text/html; charset=utf-8")
+        return Response(render_html_report(data), media_type="text/html; charset=utf-8")
 
     frontend_dist = Path(__file__).parents[2] / "frontend" / "dist"
     if frontend_dist.is_dir():
