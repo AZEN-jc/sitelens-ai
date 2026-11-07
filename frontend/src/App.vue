@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
+function goBack() {
+  if (window.history.length > 1) router.back()
+  else router.push('/')
+}
 const links = [
   { label: '概览', to: '/', icon: '◫' },
   { label: '历史对比', to: '/compare', icon: '⇄' },
@@ -13,10 +18,10 @@ const links = [
 <template>
   <div class="app-frame">
     <aside class="sidebar">
-      <RouterLink to="/" class="brand">
-        <span class="brand-mark">◈</span>
-        <span><strong>SiteLens</strong><small>网站技术识别与分析</small></span>
-      </RouterLink>
+      <button type="button" class="back-btn" @click="goBack">
+        <span class="back-arrow">←</span>
+        <span class="back-text"><b>返回</b><small>回到上一个页面</small></span>
+      </button>
       <div class="nav-group-label">工作区</div>
       <nav class="side-nav" aria-label="主导航">
         <RouterLink v-for="item in links" :key="item.to" :to="item.to" :class="{ active: route.path === item.to || (item.to === '/' && route.path.startsWith('/scans/')) }">
