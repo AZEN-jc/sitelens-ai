@@ -8,9 +8,11 @@ const url = ref('')
 const loading = ref(false)
 
 async function submit() {
+  const target = url.value.trim()
+  if (!target || loading.value) return
   loading.value = true
   try {
-    const scan = await api.createScan(url.value.trim())
+    const scan = await api.createScan(target)
     await router.push(`/scans/${scan.id}`)
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '检测失败。')
