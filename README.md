@@ -56,7 +56,15 @@ AI 密钥只留在后端内存，不写盘、不回传。服务只绑定 127.0.0
 
 ## 提交前填写个人信息
 
-毕业设计材料需要本人标识。把 `backend/app/report.py` 顶部四项常量替换为真实信息，导出的报告页脚就会带上。`docs/TECHNICAL_SUMMARY.md` 封面与 `docs/DEFENSE_VIDEO_SCRIPT.md` 台词里的占位符也要同步替换。产品界面本身不加姓名横幅。
+毕业设计材料需要本人标识。把 `backend/app/report.py` 顶部四项常量替换为真实信息，导出的报告页脚就会带上。
+
+离线演示包里有一份报告渲染副本，改完执行下面这条命令同步，否则答辩现场导出的报告仍是占位符。
+
+```sh
+cp backend/app/report.py demo/report.py
+```
+
+`docs/TECHNICAL_SUMMARY.md` 封面与 `docs/DEFENSE_VIDEO_SCRIPT.md` 台词里的占位符也要同步替换。产品界面本身不加姓名横幅。
 
 ## 答辩现场离线演示（零依赖）
 
