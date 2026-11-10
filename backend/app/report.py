@@ -8,6 +8,12 @@ from __future__ import annotations
 import html
 from typing import Any
 
+# 提交前把下面四项替换为本人真实信息，导出的报告页脚会带上这些标识。
+STUDENT_NAME = "【填写姓名】"
+STUDENT_ID = "【填写学号】"
+STUDENT_CLASS = "【填写专业班级】"
+STUDENT_ADVISOR = "【填写指导教师】"
+
 CONFIDENCE_ZH = {"high": "高", "medium": "中", "low": "低"}
 HEADER_LABELS = {
     "server": "服务器身份（Server）",
@@ -58,6 +64,7 @@ dd code{color:#d0d0d0;font-size:12px}
 ul.resources{margin:4px 0 12px;padding:0;list-style:none}
 ul.resources li{font-size:11px;color:#c8c8c8;word-break:break-all;margin:3px 0}
 .foot{color:#6a6a6a;font-size:11px;line-height:1.8;margin-top:22px;border-top:1px solid #222;padding-top:14px}
+.byline{color:#c8c8c8;font-size:11px;letter-spacing:.06em;margin:0 0 10px;padding:8px 10px;border-left:2px solid #e61919;background:#141414}
 .summary-row{display:flex;flex-wrap:wrap;gap:1px;background:#2a2a2a;border:1px solid #2a2a2a;margin:14px 0}
 .summary-row span{background:#101010;padding:10px 16px;font-size:12px;color:#d0d0d0}
 .summary-row small{display:block;color:#8a8a8a;font-size:10px}
@@ -184,6 +191,7 @@ def render_html_report(data: dict[str, Any]) -> str:
         + f'<div class="panel"><h3>技术识别结果</h3>{tech_sections}</div>'
         + (f'<div class="panel"><h3>外部资源清单</h3><ul class="resources">{scripts}{styles}</ul></div>' if (scripts or styles) else "")
         + ai
+        + f'<div class="byline">毕业设计作品 ｜ 设计人 {_esc(STUDENT_NAME)} ｜ 学号 {_esc(STUDENT_ID)} ｜ {_esc(STUDENT_CLASS)} ｜ 指导教师 {_esc(STUDENT_ADVISOR)}</div>'
         + '<div class="foot">识别依据为公开响应证据。标注「白纸黑字」的结论来自响应头或页面声明的直接证据，可以打开对应网址查看源码核实；'
         "标注「旁证推断」的仅依赖脚本命名、页面关键字等间接特征。置信等级是项目内部规则分数，不代表统计概率。"
         "本次缺少证据不代表技术已被移除。本报告由本机工具生成，检测过程只发起了一次普通网页访问。</div></html>"

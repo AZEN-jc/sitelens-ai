@@ -48,8 +48,12 @@ AI 密钥只留在后端内存，不写盘、不回传。服务只绑定 127.0.0
 
 ## 文档
 
-[学习手册](docs/LEARNING_GUIDE.md) · [答辩稿](docs/DEFENSE_SCRIPT.md) · [架构](docs/ARCHITECTURE.md) · [API](docs/API.md) · [验收记录](docs/TEST_REPORT.md) · [下一步](docs/NEXT_STEPS.md)
+[演示动线](docs/DEMO_SCRIPT.md) · [技术总结](docs/TECHNICAL_SUMMARY.md) · [出镜分镜表](docs/DEFENSE_VIDEO_SCRIPT.md) · [系统图纸](docs/DIAGRAMS.md) · [学习手册](docs/LEARNING_GUIDE.md) · [答辩稿](docs/DEFENSE_SCRIPT.md) · [架构](docs/ARCHITECTURE.md) · [API](docs/API.md) · [验收记录](docs/TEST_REPORT.md)
 
 ## 开源许可
 
 本项目采用 GPL-3.0-or-later 许可证，详见 [LICENSE](LICENSE)。欢迎查看源码、复现实验结果或提交改进。
+
+## 提交前填写个人信息
+
+毕业设计材料需要本人标识。把 `backend/app/report.py` 顶部四项常量替换为真实信息，导出的报告页脚就会带上。`docs/TECHNICAL_SUMMARY.md` 封面与 `docs/DEFENSE_VIDEO_SCRIPT.md` 台词里的占位符也要同步替换。产品界面本身不加姓名横幅。
