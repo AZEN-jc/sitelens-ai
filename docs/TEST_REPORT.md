@@ -60,8 +60,8 @@
 | 历史分页回归（先红后绿） | `./.venv/bin/pytest tests/backend/test_api.py::test_scan_history_count_and_offset_reach_older_records -q` | 实现前按预期失败：`/api/scans/count` 被旧的 `/api/scans/{scan_id}` 路由当作 ID，返回 422；实现后退出码 0。测试建 35 条记录并验证总数、30+5 分页及无遗漏。 |
 | 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；24 passed in 5.07s。 |
 | 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
-| 前端测试（Node.js 24.22.1） | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend test` | 退出码 0；5 个测试文件、5 项测试通过，覆盖导航、扫描授权提交、报告分页、比较分页和设置保存/测试失败/清除。Node 24.22.1 符合 `package.json` 声明范围。 |
-| 前端类型检查与生产构建 | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 通过，Vite 转换 2249 个模块并构建完成。图表分块 540.47 kB（gzip 189.29 kB），仍触发 500 kB 体积提示。 |
+| 前端测试（Node.js 24.22.1） | `pnpm --dir frontend test` | 退出码 0；5 个测试文件、5 项测试通过，覆盖导航、扫描授权提交、报告分页、比较分页和设置保存/测试失败/清除。Node 24.22.1 符合 `package.json` 声明范围。 |
+| 前端类型检查与生产构建 | `pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 通过，Vite 转换 2249 个模块并构建完成。图表分块 540.47 kB（gzip 189.29 kB），仍触发 500 kB 体积提示。 |
 | 本机运行 | 重启 `./scripts/start-local.sh` 后用 curl 检查 | `/`、`/scans/1`、`/settings`、`/api/health` 均返回 HTTP 200；`/api/scans/count` 返回 1；`limit=1&offset=0` 返回 1 条，`offset=30` 返回 0 条；Uvicorn 监听 `127.0.0.1:8000`。 |
 
 中间一次完整 lint 检查指出新导入顺序未排序；修正后再次运行后端测试与 Ruff，均通过。前端测试中测试替身最初把比较按钮和分页按钮选成同一个元素；调整测试选择器后，完整前端套件通过。该问题仅发生在测试替身中，未改动产品交互逻辑。
@@ -84,7 +84,7 @@
 | --- | --- | --- |
 | 后端测试 | `./.venv/bin/pytest -q` | 退出码 0；24 passed in 4.13s。 |
 | 后端 lint | `./.venv/bin/ruff check backend tests` | 退出码 0；All checks passed。 |
-| 前端测试（项目支持的 Node 24 runtime） | `PATH=/Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH /Users/admin/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback/pnpm --dir frontend test` | 退出码 0；7 个测试文件、7 项测试全部通过，耗时 7.44s。包含导航、扫描授权、历史分页、设置交互、无效检测深链错误状态和类别中文映射。 |
+| 前端测试（项目支持的 Node 24 runtime） | `pnpm --dir frontend test` | 退出码 0；7 个测试文件、7 项测试全部通过，耗时 7.44s。包含导航、扫描授权、历史分页、设置交互、无效检测深链错误状态和类别中文映射。 |
 | 前端类型检查与生产构建 | 同一 Node 24 runtime 下运行 `pnpm --dir frontend build` | 退出码 0；`vue-tsc -b` 与 Vite 构建成功，转换 2250 个模块，构建耗时 16.06s。`charts` 分块 540.47 kB（gzip 189.29 kB），仍有 Vite 500 kB 体积提示。 |
 | diff 格式检查 | `git diff --check` | 退出码 0。 |
 | 最新服务启动 | `./scripts/start-local.sh` 作为持续命令会话运行 | Uvicorn 使用当前后端和刚生成的前端 `dist`，监听 `127.0.0.1:8000`。 |

@@ -49,3 +49,7 @@ AI 密钥只留在后端内存，不写盘、不回传。服务只绑定 127.0.0
 ## 文档
 
 [学习手册](docs/LEARNING_GUIDE.md) · [答辩稿](docs/DEFENSE_SCRIPT.md) · [架构](docs/ARCHITECTURE.md) · [API](docs/API.md) · [验收记录](docs/TEST_REPORT.md) · [下一步](docs/NEXT_STEPS.md)
+
+## 开源许可
+
+本项目采用 GPL-3.0-or-later 许可证，详见 [LICENSE](LICENSE)。欢迎查看源码、复现实验结果或提交改进。
