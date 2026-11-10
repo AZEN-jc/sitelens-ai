@@ -1,0 +1,893 @@
+[
+ {
+  "id": 26,
+  "url": "https://www.bilibili.com/",
+  "final_url": "https://www.bilibili.com/",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "哔哩哔哩 (゜-゜)つロ 干杯~-bilibili",
+  "headers": {
+   "content-type": "text/html; charset=utf-8"
+  },
+  "meta": [],
+  "scripts": [
+   "https://s1.hdslb.com/bfs/seed/jinkela/short/bmg/register/fallback.js",
+   "https://s1.hdslb.com/bfs/seed/log/report/log-reporter.js",
+   "https://s1.hdslb.com/bfs/seed/jinkela/short/b-mirror/biliMirror.umd.mini.js",
+   "https://www.bilibili.com/gentleman/polyfill.js",
+   "https://s1.hdslb.com/bfs/static/shanks/laputa-home/assets/index-84fb5632.js",
+   "https://s1.hdslb.com/bfs/cm/cm-sdk/static/js/bili-collect.js",
+   "https://s1.hdslb.com/bfs/static/shanks/laputa-home/assets/polyfills-legacy-8a67a3a6.js"
+  ],
+  "styles": [
+   "https://s1.hdslb.com/bfs/static/shanks/laputa-home/assets/index-4d416e23.css"
+  ],
+  "duration_ms": 2618,
+  "page_bytes": 168101,
+  "created_at": "2026-11-07T08:47:45.969191Z",
+  "technologies": [
+   {
+    "name": "Vue",
+    "category": "Frontend framework",
+    "category_label": "前端框架",
+    "score": 60,
+    "confidence": "medium",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "data-v-345986cd",
+      "kind": "indirect",
+      "weight": 60
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 21,
+  "url": "baidu.com",
+  "final_url": "https://www.baidu.com/",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "百度一下，你就知道",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "BWS/1.1"
+  },
+  "meta": [],
+  "scripts": [
+   "https://pss.bdstatic.com/static/superman/js/lib/jquery-1-edb203c114.10.2.js",
+   "https://pss.bdstatic.com/static/superman/js/lib/esl-7410c1d5ab.js",
+   "https://pss.bdstatic.com/r/www/cache/static/protocol/https/bundles/es6-polyfill_388d059.js",
+   "https://pss.bdstatic.com/r/www/cache/static/protocol/https/bundles/polyfill_9354efa.js",
+   "https://pss.bdstatic.com/r/www/cache/static/protocol/https/global/js/instant_search_newi_ac41303.js",
+   "https://pss.bdstatic.com/r/www/cache/static/protocol/https/global/js/all_async_search_a2ce963.js",
+   "https://pss.bdstatic.com/static/superman/js/sbase-d1a62b47b0.js",
+   "https://pss.bdstatic.com/static/superman/js/s_super_index-895c0c52f8.js",
+   "https://pss.bdstatic.com/static/superman/js/min_super-e11419c661.js",
+   "https://pss.bdstatic.com/static/superman/js/components/hotsearch-2e7b839d0b.js",
+   "https://hectorstatic.baidu.com/cd37ed75a9387c5b.js"
+  ],
+  "styles": [
+   "https://pss.bdstatic.com/r/www/static/font/cosmic/pc/cos-icon_01c45ca.css",
+   "https://pss.bdstatic.com/static/superman/css/ubase_sync-d600f57804.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:56:10.737812Z",
+  "technologies": [
+   {
+    "name": "jQuery",
+    "category": "JavaScript library",
+    "category_label": "JavaScript 库",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "jquery-1-edb203c114.10.2.js",
+      "kind": "indirect",
+      "weight": 75
+     },
+     {
+      "source": "html",
+      "matched": "jquery-1-edb203c114.10.2.js",
+      "kind": "indirect",
+      "weight": 55
+     }
+    ]
+   },
+   {
+    "name": "Baidu BWS",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "BWS/",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 20,
+  "url": "https://www.csdn.net",
+  "final_url": "https://www.csdn.net",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "CSDN_专业开发者社区",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "WAF"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui"
+   }
+  ],
+  "scripts": [
+   "https://g.csdnimg.cn/tingyun/tingyun.js",
+   "https://g.csdnimg.cn/",
+   "https://g.csdnimg.cn/common/csdn-report/report.js",
+   "https://g.csdnimg.cn/user-ordercart/2.0.1/user-ordercart.js",
+   "https://g.csdnimg.cn/common/csdn-login-box/csdn-login-box.js",
+   "https://g.csdnimg.cn/user-ordertip/3.0.2/user-ordertip.js",
+   "https://g.csdnimg.cn/common/csdn-toolbar/csdn-toolbar.js",
+   "https://www.csdn.net/cdn_cgi_bs_captcha/static/js/waf_captcha_embedded_bs_v6.3.0805.js",
+   "https://csdnimg.cn/release/cmsfe/public/js/runtime.425411eb.js",
+   "https://csdnimg.cn/release/cmsfe/public/js/chunk/common.6e48b6b3.js",
+   "https://csdnimg.cn/release/cmsfe/public/js/chunk/tpl/www-index-side/index.f107f097.js",
+   "https://g.csdnimg.cn/side-toolbar/3.4/side-toolbar.js",
+   "https://kunpeng-render.csdnimg.cn/publisher/latest/closeAdFrame.js"
+  ],
+  "styles": [
+   "https://csdnimg.cn/release/cmsfe/public/css/common.7303c5f0.css",
+   "https://csdnimg.cn/release/cmsfe/public/css/tpl/www-index-side/index.8d771cc3.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:52:34.968008Z",
+  "technologies": [
+   {
+    "name": "Vue",
+    "category": "Frontend framework",
+    "category_label": "前端框架",
+    "score": 60,
+    "confidence": "medium",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "data-v-f4761a84",
+      "kind": "indirect",
+      "weight": 60
+     }
+    ]
+   },
+   {
+    "name": "jQuery",
+    "category": "JavaScript library",
+    "category_label": "JavaScript 库",
+    "score": 55,
+    "confidence": "medium",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "jquery.min.js",
+      "kind": "indirect",
+      "weight": 55
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 19,
+  "url": "https://www.sohu.com",
+  "final_url": "https://www.sohu.com",
+  "status_code": 200,
+  "content_type": "text/html;charset=utf-8",
+  "title": "搜狐",
+  "headers": {
+   "content-type": "text/html;charset=utf-8",
+   "server": "openresty"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width,initial-scale=1,minimum-scale=1,user-scalable=yes,viewport-fit=cover"
+   }
+  ],
+  "scripts": [
+   "https://txt.go.sohu.com/ip/soip",
+   "https://statics.itc.cn/fasttpl/pchome/prod/backbone.js",
+   "https://g1.itc.cn/msfe-pch-prod/300000000000/assets/ClientJs/main-c46570582f.js",
+   "https://cpro.baidustatic.com/cpro/ui/c.js",
+   "https://statics.itc.cn/js/libpv.js",
+   "https://js.go.sohu.com/bill/default/sohu-require.js",
+   "https://www.sohu.com/sohuflash_1.js",
+   "https://js.go.sohu.com/bill/s2015/jscript/lib/sjs/matrix/ad/form/delivery.js",
+   "https://js.go.sohu.com/bill/s2015/jscript/lib/sjs/matrix/pv/pagePVmonitor.js"
+  ],
+  "styles": [
+   "https://g1.itc.cn/msfe-pch-prod/300000000000/assets/ClientCss/critical-6c712923d6.css",
+   "https://g1.itc.cn/msfe-pch-prod/300000000000/assets/ClientCss/main-22cf175e3e.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:52:33.543494Z",
+  "technologies": [
+   {
+    "name": "OpenResty",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "openresty",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 18,
+  "url": "https://sspai.com",
+  "final_url": "https://sspai.com",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "少数派 - 高效工作，品质生活",
+  "headers": {
+   "content-type": "text/html; charset=utf-8"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover"
+   },
+   {
+    "name": "og:site_name",
+    "content": "少数派 - 高品质数字消费指南"
+   },
+   {
+    "name": "twitter:card",
+    "content": "summary_large_image"
+   }
+  ],
+  "scripts": [
+   "https://www.googletagmanager.com/gtag/js",
+   "https://post.sspai.com/manifest.4dbe45f9.js",
+   "https://post.sspai.com/layout-home.d7b8f2e0.js",
+   "https://post.sspai.com/home.96270701.js",
+   "https://post.sspai.com/sspai-ui.b8500b0e.js",
+   "https://post.sspai.com/element-ui.c24deb09.js",
+   "https://post.sspai.com/vendor-chunk.aea545c2.js",
+   "https://post.sspai.com/main.85c4b198.js",
+   "https://cdn-static.sspai.com/libs/vue@2.7.16/vue.min.js",
+   "https://cdn-static.sspai.com/libs/vuex@3.6.2/vuex.min.js",
+   "https://cdn-static.sspai.com/libs/vue-router@3.6.5/vue-router.min.js",
+   "https://res.wx.qq.com/open/js/jweixin-1.4.0.js",
+   "https://cdn-static.sspai.com/ui/sspai_svg_icon-v0.1/svgxuse.js"
+  ],
+  "styles": [
+   "https://post.sspai.com/sspai-ui.e8bc9726.css",
+   "https://post.sspai.com/element-ui.7aa39752.css",
+   "https://post.sspai.com/styles.cd3800d3.css",
+   "https://post.sspai.com/layout-home.7b2bf89d.css",
+   "https://post.sspai.com/home.4459dcb8.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:52:32.243970Z",
+  "technologies": [
+   {
+    "name": "Google Analytics",
+    "category": "Analytics",
+    "category_label": "分析统计",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "googletagmanager.com/gtag/js",
+      "kind": "indirect",
+      "weight": 85
+     }
+    ]
+   },
+   {
+    "name": "百度统计",
+    "category": "Analytics",
+    "category_label": "分析统计",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "hm.baidu.com/hm.js",
+      "kind": "indirect",
+      "weight": 85
+     }
+    ]
+   },
+   {
+    "name": "Vue",
+    "category": "Frontend framework",
+    "category_label": "前端框架",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "data-v-66ecc84e",
+      "kind": "indirect",
+      "weight": 60
+     },
+     {
+      "source": "script_src",
+      "matched": "vue.min.js",
+      "kind": "indirect",
+      "weight": 60
+     }
+    ]
+   },
+   {
+    "name": "Element UI",
+    "category": "UI framework",
+    "category_label": "UI 框架",
+    "score": 80,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "element-ui.c24deb09.js",
+      "kind": "indirect",
+      "weight": 80
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 17,
+  "url": "https://www.jd.com",
+  "final_url": "https://www.jd.com",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "京东(JD.COM)-正品低价、品质保障、配送及时、轻松购物！",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "nginx",
+   "via": "http/1.1 ORI-CLOUD-HUZ-MIX-25 (jcs [cRs f ]), http/1.1 SQ-CT-1-MIX-16 (jcs [cRs f ])"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+   }
+  ],
+  "scripts": [
+   "https://misc.360buyimg.com/jdf/lib/jquery-1.6.4.js",
+   "https://wl.jd.com/wl.js",
+   "https://storage.360buyimg.com/retail-mall/lib/emiter.js",
+   "https://misc.360buyimg.com/",
+   "https://gias.jd.com/js/pc-tk.js",
+   "https://storage.360buyimg.com/staticapp/pc_mall_public/encrypt/sha256.js",
+   "https://storage.360buyimg.com/pubfree-basic/pc-risk/2.2.0/pc-core-disposal.js",
+   "https://storage.360buyimg.com/webcontainer/js_security_v3_0.1.4.js",
+   "https://storage.360buyimg.com/retail-mall/mall-common-component/prod/1.0.19/js/index.d0da118c.js",
+   "https://storage.360buyimg.com/channel2022/jd_home/0.0.194/static/js/runtime.js",
+   "https://storage.360buyimg.com/channel2022/jd_home/0.0.194/static/js/index.chunk.js",
+   "https://static.360buyimg.com/item/assets/oldman/wza1/aria.js"
+  ],
+  "styles": [
+   "https://storage.360buyimg.com/channel2022/jd_home/0.0.194/static/css/first-screen.chunk.css",
+   "https://storage.360buyimg.com/channel2022/jd_home/0.0.194/static/css/index.chunk.css",
+   "https://storage.360buyimg.com/retail-mall/mall-common-component/prod/1.0.19/css/index.d0da118c.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:52:31.030969Z",
+  "technologies": [
+   {
+    "name": "jQuery",
+    "category": "JavaScript library",
+    "category_label": "JavaScript 库",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "jquery-1.6.4.js",
+      "kind": "indirect",
+      "weight": 75
+     },
+     {
+      "source": "html",
+      "matched": "jquery-1.6.4.js",
+      "kind": "indirect",
+      "weight": 55
+     }
+    ]
+   },
+   {
+    "name": "Nginx",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "nginx",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 15,
+  "url": "https://wordpress.org",
+  "final_url": "https://wordpress.org",
+  "status_code": 200,
+  "content_type": "text/html; charset=UTF-8",
+  "title": "Blog Tool, Publishing Platform, and CMS | WordPress.org",
+  "headers": {
+   "server": "nginx",
+   "content-type": "text/html; charset=UTF-8"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width, initial-scale=1"
+   },
+   {
+    "name": "robots",
+    "content": "max-image-preview:large"
+   },
+   {
+    "name": "og:site_name",
+    "content": "WordPress.org"
+   },
+   {
+    "name": "twitter:card",
+    "content": "summary_large_image"
+   },
+   {
+    "name": "generator",
+    "content": "WordPress 7.2-beta4-65314"
+   }
+  ],
+  "scripts": [
+   "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/language-suggest/build/front.js",
+   "https://wordpress.org/wp-content/plugins/gutenberg/build/modules/block-library/navigation/view.min.js",
+   "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js",
+   "https://stats.wp.com/e-202645.js",
+   "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js"
+  ],
+  "styles": [
+   "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/navigation/style.min.css",
+   "https://wordpress.org/wp-content/plugins/gutenberg/build/styles/block-library/social-links/style.min.css",
+   "https://wordpress.org/wp-content/mu-plugins/pub-sync/global-fonts/style.css",
+   "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/block-styles.css",
+   "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/style.css",
+   "https://wordpress.org/wp-includes/css/dashicons.min.css",
+   "https://wordpress.org/wp-content/themes/wporg-main-2022/build/style/style-index.css",
+   "https://wordpress.org/wp-content/themes/wporg-parent-2021/build/print.css",
+   "https://wordpress.org/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:52:27.192056Z",
+  "technologies": [
+   {
+    "name": "Google Analytics",
+    "category": "Analytics",
+    "category_label": "分析统计",
+    "score": 75,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "googletagmanager.com/gtm.js",
+      "kind": "indirect",
+      "weight": 75
+     }
+    ]
+   },
+   {
+    "name": "WordPress",
+    "category": "CMS",
+    "category_label": "内容管理系统",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "meta_generator",
+      "matched": "WordPress",
+      "kind": "direct",
+      "weight": 90
+     },
+     {
+      "source": "html",
+      "matched": "wp-content/",
+      "kind": "indirect",
+      "weight": 60
+     }
+    ]
+   },
+   {
+    "name": "Nginx",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "nginx",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 14,
+  "url": "https://www.hnpi.edu.cn/",
+  "final_url": "https://www.hnpi.edu.cn/",
+  "status_code": 200,
+  "content_type": "text/html",
+  "title": "河南工业职业技术大学",
+  "headers": {
+   "server": "******",
+   "content-type": "text/html"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width,user-scalable=0,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
+   }
+  ],
+  "scripts": [
+   "https://www.hnpi.edu.cn/_js/jquery.min.js",
+   "https://www.hnpi.edu.cn/_js2/loadStyle.js",
+   "https://www.hnpi.edu.cn/_js2/grayscale.js",
+   "https://www.hnpi.edu.cn/_js/jquery.sudy.wp.visitcount.js",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/winfloat/js/winfloat.js",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/sudyNavi/jquery.sudyNav.js",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/datepicker/js/jquery.datepicker.js",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/datepicker/js/datepicker_lang_HK.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/extends/extends.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/js/comcus.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/js/main.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/js/vivus.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/js/svg.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/slick/slick.min.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/js/pen.js",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/swiper/swiper_bundle_min.js"
+  ],
+  "styles": [
+   "https://www.hnpi.edu.cn/_css/_system/system.css",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/sudyNavi/css/sudyNav.css",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/datepicker/css/datepicker.css",
+   "https://www.hnpi.edu.cn/_js/_portletPlugs/simpleNews/css/simplenews.css",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/mobile.css",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/slick/slick.css",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/style.css",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/media.css",
+   "https://www.hnpi.edu.cn/_upload/tpl/00/39/57/template57/swiper/swiper_bundle_min.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:36:44.951552Z",
+  "technologies": [
+   {
+    "name": "jQuery",
+    "category": "JavaScript library",
+    "category_label": "JavaScript 库",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "jquery.min.js",
+      "kind": "indirect",
+      "weight": 75
+     },
+     {
+      "source": "html",
+      "matched": "jquery.min.js",
+      "kind": "indirect",
+      "weight": 55
+     }
+    ]
+   },
+   {
+    "name": "Swiper",
+    "category": "JavaScript library",
+    "category_label": "JavaScript 库",
+    "score": 70,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "script_src",
+      "matched": "swiper_bundle_min.js",
+      "kind": "indirect",
+      "weight": 70
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 10,
+  "url": "https://leetcode.cn/",
+  "final_url": "https://leetcode.cn/",
+  "status_code": 403,
+  "content_type": "text/html; charset=UTF-8",
+  "title": "Just a moment...",
+  "headers": {
+   "content-type": "text/html; charset=UTF-8",
+   "server": "cloudflare",
+   "cf-ray": "a56a3694d911be44-SEA"
+  },
+  "meta": [
+   {
+    "name": "robots",
+    "content": "noindex,nofollow"
+   },
+   {
+    "name": "viewport",
+    "content": "width=device-width,initial-scale=1"
+   }
+  ],
+  "scripts": [],
+  "styles": [],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-07T06:17:08.689096Z",
+  "technologies": [
+   {
+    "name": "Cloudflare",
+    "category": "CDN",
+    "category_label": "内容分发网络",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "cloudflare",
+      "kind": "direct",
+      "weight": 85
+     },
+     {
+      "source": "header:cf-ray",
+      "matched": "a56a3694d911be44-SEA",
+      "kind": "direct",
+      "weight": 70
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 3,
+  "url": "https://react.demo.test/",
+  "final_url": "https://react.demo.test/",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "示例站点 · React 技术演示",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "nginx"
+  },
+  "meta": [],
+  "scripts": [
+   "https://react.demo.test/assets/react-dom.js"
+  ],
+  "styles": [],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-05T13:25:19.013212Z",
+  "technologies": [
+   {
+    "name": "React",
+    "category": "Frontend framework",
+    "category_label": "前端框架",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "html",
+      "matched": "data-reactroot",
+      "kind": "indirect",
+      "weight": 65
+     },
+     {
+      "source": "script_src",
+      "matched": "react.demo.test/assets/react-dom.js",
+      "kind": "indirect",
+      "weight": 55
+     }
+    ]
+   },
+   {
+    "name": "Nginx",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "nginx",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 2,
+  "url": "https://wordpress.demo.test/",
+  "final_url": "https://wordpress.demo.test/",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "示例站点 · WordPress 技术演示",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "Apache"
+  },
+  "meta": [
+   {
+    "name": "generator",
+    "content": "WordPress 6.8"
+   }
+  ],
+  "scripts": [],
+  "styles": [
+   "https://wordpress.demo.test/wp-content/themes/demo/style.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-11-05T13:25:18.997145Z",
+  "technologies": [
+   {
+    "name": "WordPress",
+    "category": "CMS",
+    "category_label": "内容管理系统",
+    "score": 100,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "meta_generator",
+      "matched": "WordPress",
+      "kind": "direct",
+      "weight": 90
+     },
+     {
+      "source": "html",
+      "matched": "wp-content/",
+      "kind": "indirect",
+      "weight": 60
+     }
+    ]
+   },
+   {
+    "name": "Apache",
+    "category": "Web server",
+    "category_label": "Web 服务器",
+    "score": 85,
+    "confidence": "high",
+    "evidence": [
+     {
+      "source": "header:server",
+      "matched": "Apache",
+      "kind": "direct",
+      "weight": 85
+     }
+    ]
+   }
+  ],
+  "ai_report_count": 0,
+  "ai_reports": []
+ },
+ {
+  "id": 1,
+  "url": "https://github.com",
+  "final_url": "https://github.com",
+  "status_code": 200,
+  "content_type": "text/html; charset=utf-8",
+  "title": "GitHub · Change is constant. GitHub keeps you ahead. · GitHub · GitHub",
+  "headers": {
+   "content-type": "text/html; charset=utf-8",
+   "server": "github.com"
+  },
+  "meta": [
+   {
+    "name": "viewport",
+    "content": "width=device-width"
+   },
+   {
+    "name": "twitter:card",
+    "content": "summary_large_image"
+   },
+   {
+    "name": "og:site_name",
+    "content": "GitHub"
+   }
+  ],
+  "scripts": [
+   "https://github.githubassets.com/assets/high-contrast-cookie-141c17800ca6ba23.js",
+   "https://github.githubassets.com/assets/environment-b000ef502ffae482.js",
+   "https://github.githubassets.com/assets/github-elements-81e6a26ad87108a4.js",
+   "https://github.githubassets.com/assets/element-registry-fe5e54ca9f6997b1.js",
+   "https://github.githubassets.com/assets/behaviors-b504f5f72fb0498b.js",
+   "https://github.githubassets.com/assets/marketing-essentials-b7372fab2f0e5f20.js",
+   "https://github.githubassets.com/assets/landing-pages-1fda6d238ac78444.js",
+   "https://github.githubassets.com/assets/global-banner-disable-750ad87f36b8e45f.js"
+  ],
+  "styles": [
+   "https://github.githubassets.com/assets/light-3a3d2c708970e4e8.css",
+   "https://github.githubassets.com/assets/light_high_contrast-9c7b506bdc5ea73f.css",
+   "https://github.githubassets.com/assets/dark-c9dacb4ec19616db.css",
+   "https://github.githubassets.com/assets/dark_high_contrast-5ef38214a3eabc7d.css",
+   "https://github.githubassets.com/assets/primer-primitives-02e066689466a8cd.css",
+   "https://github.githubassets.com/assets/primer-38ae573fa780d76a.css",
+   "https://github.githubassets.com/assets/global-b577b4b65d1381c3.css",
+   "https://github.githubassets.com/assets/github-11ab453cdcc1b7c1.css",
+   "https://github.githubassets.com/assets/marketing-4224c29902ac973c.css",
+   "https://github.githubassets.com/assets/home-6e1ba190d2b41fdf.css",
+   "https://github.githubassets.com/assets/app-runtime.e7b3f1d45a097d06.module.css",
+   "https://github.githubassets.com/assets/react-core.25ec5f5e1205d08d.module.css",
+   "https://github.githubassets.com/assets/primer-react-css.dc074e1b2708fdd8.module.css",
+   "https://github.githubassets.com/assets/primer-react-brand-css.bf4feb030857a64b.module.css",
+   "https://github.githubassets.com/assets/landing-pages.09194e83260a8897.module.css",
+   "https://github.githubassets.com/assets/keyboard-shortcuts-dialog.5b41355f0a6f9440.module.css",
+   "https://github.githubassets.com/assets/marketing-global-banner.2facfd3890698588.module.css",
+   "https://github.githubassets.com/assets/app-install-banner-partial.96a61a7d7c95ac0c.module.css",
+   "https://github.githubassets.com/assets/a6j.18d2308d466c3fd0.module.css",
+   "https://github.githubassets.com/assets/marketing-footer.28c0d40035a22fe4.module.css"
+  ],
+  "duration_ms": 0,
+  "page_bytes": 0,
+  "created_at": "2026-10-27T02:47:42.726287Z",
+  "technologies": [],
+  "ai_report_count": 0,
+  "ai_reports": []
+ }
+]
